@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>schemas/Fault.schema.json</file>
+        <file>schemas/DetailedAthlete.schema.json</file>
+    </qresource>
+</RCC>
