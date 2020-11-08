@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 
 project(qtstrava LANGUAGES CXX)
 
+option(QTSTRAVA_BUILD_EXAMPLES "Build examples" OFF)
+
 include(FetchContent)
 
 FetchContent_Declare(qtpromise
@@ -50,8 +52,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Network REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Network REQUIRED)
+find_package(Qt5 COMPONENTS Core Network NetworkAuth Gui REQUIRED)
 
 add_library(qtstrava SHARED
     include/QtStrava/Model/detailedathlete.h
@@ -80,10 +81,10 @@ add_library(qtstrava SHARED
 
 target_link_libraries(qtstrava
     PUBLIC
-        Qt${QT_VERSION_MAJOR}::Core
+        Qt5::Core
         qtpromise
     PRIVATE
-        Qt${QT_VERSION_MAJOR}::Network
+        Qt5::Network
         range-v3
         nlohmann_json_schema_validator
         expected-lite
@@ -91,7 +92,6 @@ target_link_libraries(qtstrava
 target_compile_definitions(qtstrava PRIVATE QTSTRAVA_LIBRARY)
 target_include_directories(qtstrava PUBLIC include)
 
-add_executable(qtstrava-cli
-    qtstrava-cli.cpp
-)
-target_link_libraries(qtstrava-cli PRIVATE qtstrava)
+if (QTSTRAVA_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()

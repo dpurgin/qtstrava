@@ -44,7 +44,8 @@ inline void handleNetworkSuccess(QNetworkReply *reply, const Resolve &resolve, c
     Q_ASSERT(reply->error() == QNetworkReply::NoError);
 
     QByteArray data = reply->readAll();
-    qCDebug(Private::network) << "Reply received:" << data;
+
+    qCDebug(Private::network).noquote() << "Reply received:" << data;
 
     auto model = Private::deserialize<ExpectedModel>(data);
 
@@ -73,10 +74,7 @@ class ClientPrivate
 {
     friend class Client;
 
-    ClientPrivate(const QUrl &server, const QString &authorizationToken)
-        : m_server{server}, m_authorizationToken{authorizationToken},
-          m_authorizationHeaderValue{"Bearer " + authorizationToken.toLatin1()}
-    {}
+    ClientPrivate(const QUrl &server) : m_server{server} {}
 
     [[nodiscard]] QNetworkRequest createRequest(const QString &endPoint,
                                                 const QVariantMap &parameters);
@@ -89,7 +87,7 @@ class ClientPrivate
 
     QNetworkAccessManager m_nam;
     QUrl m_server;
-    QString m_authorizationToken;
+    QString m_accessToken;
     QByteArray m_authorizationHeaderValue;
 };
 
@@ -133,13 +131,31 @@ void ClientPrivate::get(const QString &endPoint,
                      networkReplyHandler<ExpectedModel>(reply, resolve, reject));
 }
 
-Client::Client(const QUrl &server, const QString &authorizationToken, QObject *parent)
-    : QObject{parent}, d_ptr{new ClientPrivate{server, authorizationToken}}
+Client::Client(const QUrl &server, QObject *parent)
+    : QObject{parent}, d_ptr{new ClientPrivate{server}}
 {}
 
 Client::~Client()
 {
     delete d_ptr;
+}
+
+QString Client::accessToken() const
+{
+    Q_D(const Client);
+    return d->m_accessToken;
+}
+
+void Client::setAccessToken(const QString &accessToken)
+{
+    Q_D(Client);
+
+    if (d->m_accessToken != accessToken) {
+        d->m_accessToken = accessToken;
+        d->m_authorizationHeaderValue = QString{"Bearer %1"}.arg(accessToken).toLatin1();
+
+        emit accessTokenChanged();
+    }
 }
 
 QtPromise::QPromise<Model::DetailedAthlete> Client::getLoggedInAthlete()

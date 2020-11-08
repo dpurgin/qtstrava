@@ -104,11 +104,11 @@
         },
         "ftp": {
             "$id": "#/properties/ftp",
-            "type": "null"
+            "type": "integer"
         },
         "weight": {
             "$id": "#/properties/weight",
-            "type": "integer"
+            "type": "number"
         },
         "bikes": {
             "$id": "#/properties/bikes",
