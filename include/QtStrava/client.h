@@ -3,6 +3,7 @@
 #include <QtStrava/global.h>
 
 #include <QtCore/qobject.h>
+#include <QtCore/qurl.h>
 #include <QtPromise>
 
 #include <optional>
@@ -22,8 +23,12 @@ class QTSTRAVA_EXPORT Client : public QObject
     Q_OBJECT
 
 public:
-    explicit Client(const QUrl &url, const QString &authorizationToken, QObject *parent = nullptr);
-    ~Client();
+    explicit Client(const QUrl &url = QUrl{"https://www.strava.com/api/v3"},
+                    QObject *parent = nullptr);
+    ~Client() override;
+
+    [[nodiscard]] QString accessToken() const;
+    void setAccessToken(const QString &accessToken);
 
     [[nodiscard]] QtPromise::QPromise<Model::DetailedAthlete> getLoggedInAthlete();
     [[nodiscard]] QtPromise::QPromise<QVector<Model::SummaryActivity>> getLoggedInAthleteActivities(
@@ -31,6 +36,9 @@ public:
         std::optional<QDateTime> after,
         int page = 1,
         int perPage = 30);
+
+Q_SIGNALS:
+    void accessTokenChanged();
 
 private:
     ClientPrivate *d_ptr{nullptr};
