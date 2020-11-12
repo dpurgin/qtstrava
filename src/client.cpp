@@ -20,6 +20,12 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 
+static void initResources()
+{
+    Q_INIT_RESOURCE(qtstrava);
+}
+Q_CONSTRUCTOR_FUNCTION(initResources)
+
 namespace QtStrava {
 
 template<typename Reject>
@@ -28,7 +34,7 @@ inline void handleNetworkError(QNetworkReply *reply, const Reject &reject)
     Q_ASSERT(reply->error() != QNetworkReply::NoError);
 
     QByteArray data = reply->readAll();
-    qCDebug(Private::network) << "Error received:" << reply->errorString() << data;
+    qCDebug(Private::network) << "Network error received:" << reply->errorString() << data;
 
     if (data.isEmpty()) {
         reject(NetworkError{reply->errorString()});
@@ -184,7 +190,7 @@ QtPromise::QPromise<QVector<Model::SummaryActivity>> Client::getLoggedInAthleteA
                                {"page", page},
                                {"per_page", perPage}};
 
-        d->get<QVector<Model::SummaryActivity>>("/athlete/activites", parameters, resolve, reject);
+        d->get<QVector<Model::SummaryActivity>>("/athlete/activities", parameters, resolve, reject);
     }};
 }
 } // namespace QtStrava

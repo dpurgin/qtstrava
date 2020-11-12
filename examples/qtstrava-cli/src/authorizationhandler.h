@@ -20,6 +20,8 @@
 #include <QObject>
 #include <QtNetworkAuth>
 
+#include <QtPromise>
+
 class AuthorizationHandler : public QObject
 {
     Q_OBJECT
@@ -30,7 +32,7 @@ public:
     [[nodiscard]] QString accessToken() const { return m_accessToken; }
     [[nodiscard]] QString refreshToken() const { return m_refreshToken; }
 
-    void grant();
+    [[nodiscard]] QtPromise::QPromise<void> grant();
 
 signals:
     void accessTokenChanged();

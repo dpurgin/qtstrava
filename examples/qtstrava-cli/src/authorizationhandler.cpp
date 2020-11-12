@@ -19,6 +19,8 @@
 #include <QDesktopServices>
 #include <QSettings>
 
+using namespace std::chrono_literals;
+
 AuthorizationHandler::AuthorizationHandler(QObject *parent)
     : QObject{parent}, m_oauth2(&m_nam), m_clientId(restore("strava/clientId").toString()),
       m_clientSecret{restore("strava/clientSecret").toString()},
@@ -39,14 +41,18 @@ AuthorizationHandler::AuthorizationHandler(QObject *parent)
     m_oauth2.setAuthorizationUrl(QUrl{"https://www.strava.com/oauth/authorize"});
     m_oauth2.setAccessTokenUrl(QUrl{"https://www.strava.com/api/v3/oauth/token"});
     m_oauth2.setClientIdentifier(m_clientId);
-    m_oauth2.setScope("profile:read_all");
+    m_oauth2.setScope("profile:read_all,activity:read_all");
+    m_oauth2.setRefreshToken(m_refreshToken);
 
     m_oauth2.setModifyParametersFunction(
         [this](QAbstractOAuth::Stage stage, QVariantMap *parameters) {
-            qDebug() << "Stage:" << static_cast<int>(stage) << *parameters;
-            if (stage == QAbstractOAuth::Stage::RequestingAccessToken) {
+            if (stage == QAbstractOAuth::Stage::RequestingAccessToken
+                || stage == QAbstractOAuth::Stage::RefreshingAccessToken) {
+                parameters->insert("client_id", m_clientId);
                 parameters->insert("client_secret", m_clientSecret);
             }
+
+            qDebug() << "Stage:" << static_cast<int>(stage) << *parameters;
         });
 
     connect(&m_oauth2,
@@ -85,8 +91,10 @@ AuthorizationHandler::AuthorizationHandler(QObject *parent)
     connect(&m_oauth2, &QOAuth2AuthorizationCodeFlow::granted, this, &AuthorizationHandler::granted);
 }
 
-void AuthorizationHandler::grant()
+QtPromise::QPromise<void> AuthorizationHandler::grant()
 {
+    auto grantPromise = QtPromise::connect(this, &AuthorizationHandler::granted).timeout(10s);
+
     if (m_expirationAt.isValid() && m_expirationAt <= QDateTime::currentDateTime()
         && !m_refreshToken.isEmpty()) {
         qDebug() << "Current access token expired, refreshing...";
@@ -98,6 +106,8 @@ void AuthorizationHandler::grant()
         qDebug() << "Requesting new authorization...";
         m_oauth2.grant();
     }
+
+    return grantPromise;
 }
 
 void AuthorizationHandler::setAccessToken(const QString &accessToken)

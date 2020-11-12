@@ -15,11 +15,15 @@ namespace QtStrava {
 class QTSTRAVA_EXPORT DeserializerError
 {
 public:
-    DeserializerError(QString errorText) : m_errorText{errorText} {}
+    DeserializerError(QByteArray attemptedDocument, QString errorText)
+        : m_attemptedDocument{attemptedDocument}, m_errorText{errorText}
+    {}
 
-    QString errorText() const { return m_errorText; }
+    [[nodiscard]] QByteArray attemptedDocument() const { return m_attemptedDocument; }
+    [[nodiscard]] QString errorText() const { return m_errorText; }
 
 private:
+    QByteArray m_attemptedDocument;
     QString m_errorText;
 };
 

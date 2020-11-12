@@ -22,4 +22,13 @@ enum class ActivityType {
 
     Other
 };
+
+// See "resource_state" in https://developers.strava.com/docs/reference/#api-models-DetailedAthlete
+enum class ResourceState {
+    Unknown,
+
+    Meta,
+    Summary,
+    Detail
+};
 }

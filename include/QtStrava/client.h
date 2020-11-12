@@ -35,7 +35,10 @@ public:
     [[nodiscard]] QString accessToken() const;
     void setAccessToken(const QString &accessToken);
 
+    // https://developers.strava.com/docs/reference/#api-Athletes-getLoggedInAthlete
     [[nodiscard]] QtPromise::QPromise<Model::DetailedAthlete> getLoggedInAthlete();
+
+    // https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities
     [[nodiscard]] QtPromise::QPromise<QVector<Model::SummaryActivity>> getLoggedInAthleteActivities(
         std::optional<QDateTime> before,
         std::optional<QDateTime> after,

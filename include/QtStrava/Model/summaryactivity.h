@@ -39,9 +39,6 @@ public:
     QDateTime startDateLocal() const;
     void setStartDateLocal(const QDateTime &startDateLocal);
 
-    bool trainer() const;
-    void setTrainer(bool trainer);
-
     QString gearId() const;
     void setGearId(const QString &gearId);
 
@@ -53,7 +50,6 @@ private:
     ActivityType m_activityType;
     QDateTime m_startDate;
     QDateTime m_startDateLocal;
-    bool m_trainer{false};
     QString m_gearId;
 };
 

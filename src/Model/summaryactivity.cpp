@@ -79,16 +79,6 @@ void SummaryActivity::setStartDateLocal(const QDateTime &startDateLocal)
     m_startDateLocal = startDateLocal;
 }
 
-bool SummaryActivity::trainer() const
-{
-    return m_trainer;
-}
-
-void SummaryActivity::setTrainer(bool trainer)
-{
-    m_trainer = trainer;
-}
-
 QString SummaryActivity::gearId() const
 {
     return m_gearId;

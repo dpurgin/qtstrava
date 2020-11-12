@@ -1,183 +1,78 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "http://example.com/example.json",
-    "type": "object",
-    "properties": {
-        "id": {
-            "$id": "#/properties/id",
-            "type": "integer"
-        },
-        "username": {
-            "$id": "#/properties/username",
-            "type": "string"
-        },
-        "resource_state": {
-            "$id": "#/properties/resource_state",
-            "type": "integer"
-        },
-        "firstname": {
-            "$id": "#/properties/firstname",
-            "type": "string"
-        },
-        "lastname": {
-            "$id": "#/properties/lastname",
-            "type": "string"
-        },
-        "city": {
-            "$id": "#/properties/city",
-            "type": "string"
-        },
-        "state": {
-            "$id": "#/properties/state",
-            "type": "string"
-        },
-        "country": {
-            "$id": "#/properties/country",
-            "type": "string"
-        },
-        "sex": {
-            "$id": "#/properties/sex",
-            "type": "string"
-        },
-        "premium": {
-            "$id": "#/properties/premium",
-            "type": "boolean"
-        },
-        "created_at": {
-            "$id": "#/properties/created_at",
-            "type": "string"
-        },
-        "updated_at": {
-            "$id": "#/properties/updated_at",
-            "type": "string"
-        },
-        "badge_type_id": {
-            "$id": "#/properties/badge_type_id",
-            "type": "integer"
-        },
-        "profile_medium": {
-            "$id": "#/properties/profile_medium",
-            "type": "string"
-        },
-        "profile": {
-            "$id": "#/properties/profile",
-            "type": "string"
-        },
-        "friend": {
-            "$id": "#/properties/friend",
-            "type": "null"
-        },
-        "follower": {
-            "$id": "#/properties/follower",
-            "type": "null"
-        },
-        "follower_count": {
-            "$id": "#/properties/follower_count",
-            "type": "integer"
-        },
-        "friend_count": {
-            "$id": "#/properties/friend_count",
-            "type": "integer"
-        },
-        "mutual_friend_count": {
-            "$id": "#/properties/mutual_friend_count",
-            "type": "integer"
-        },
-        "athlete_type": {
-            "$id": "#/properties/athlete_type",
-            "type": "integer"
-        },
-        "date_preference": {
-            "$id": "#/properties/date_preference",
-            "type": "string"
-        },
-        "measurement_preference": {
-            "$id": "#/properties/measurement_preference",
-            "type": "string"
-        },
-        "clubs": {
-            "$id": "#/properties/clubs",
-            "type": "array",
-            "items": {
-                "$id": "#/properties/clubs/items"
+
+    "definitions": {
+        "SummaryGear": {
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "primary": { "type": "boolean" },
+                "name": { "type": "string" },
+                "resource_state": { "type": "integer" },
+                "distance": { "type": "number" }
             }
         },
-        "ftp": {
-            "$id": "#/properties/ftp",
-            "type": "integer"
-        },
-        "weight": {
-            "$id": "#/properties/weight",
-            "type": "number"
-        },
-        "bikes": {
-            "$id": "#/properties/bikes",
+
+        "SummaryClub": {
+            "type": "object",
+            "properties": {
+                "id": { "type": "integer" },
+                "resource_state": { "type": "integer" },
+                "name": { "type": "string" },
+                "profile_medium": { "type": "string" },
+                "cover_photo": { "type": "string" },
+                "cover_photo_small": { "type": "string" },
+                "sport_type": { "type": "string" },
+                "state": { "type": "string" },
+                "country": { "type": "string" },
+                "private": { "type": "boolean" },
+                "member_count": { "type": "integer" },
+                "featured": { "type": "boolean" },
+                "verified": { "type": "boolean" },
+                "url": { "type": "string" }
+            },
+            "required": [ "id", "name" ]
+        }
+    },
+
+    "type": "object",    
+    "properties": {
+        "id": { "type": "integer" },
+        "username": { "type": "string" },
+        "resource_state": { "type": "integer" },
+        "firstname": { "type": "string" },
+        "lastname": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "country": { "type": "string" },
+        "sex": { "type": "string" },
+        "premium": { "type": "boolean" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" },
+        "profile_medium": { "type": "string" },
+        "profile": { "type": "string" },
+        "follower_count": { "type": "integer" },
+        "friend_count": { "type": "integer" },
+        "measurement_preference": { "type": "string" },
+        "clubs": {
             "type": "array",
             "items": {
-                "$id": "#/properties/bikes/items",
-                "anyOf": [
-                    {
-                        "$id": "#/properties/bikes/items/anyOf/0",
-                        "type": "object",
-                        "properties": {
-                            "id": {
-                                "$id": "#/properties/bikes/items/anyOf/0/properties/id",
-                                "type": "string"
-                            },
-                            "primary": {
-                                "$id": "#/properties/bikes/items/anyOf/0/properties/primary",
-                                "type": "boolean"
-                            },
-                            "name": {
-                                "$id": "#/properties/bikes/items/anyOf/0/properties/name",
-                                "type": "string"
-                            },
-                            "resource_state": {
-                                "$id": "#/properties/bikes/items/anyOf/0/properties/resource_state",
-                                "type": "integer"
-                            },
-                            "distance": {
-                                "$id": "#/properties/bikes/items/anyOf/0/properties/distance",
-                                "type": "integer"
-                            }
-                        }
-                    }
-                ]
+                "$ref": "#/definitions/SummaryClub"
+            }
+        },
+        "ftp": { "type": "integer" },
+        "weight": { "type": "number" },
+        "bikes": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/SummaryGear"
             }
         },
         "shoes": {
             "$id": "#/properties/shoes",
             "type": "array",
             "items": {
-                "$id": "#/properties/shoes/items",
-                "anyOf": [
-                    {
-                        "$id": "#/properties/shoes/items/anyOf/0",
-                        "type": "object",
-                        "properties": {
-                            "id": {
-                                "$id": "#/properties/shoes/items/anyOf/0/properties/id",
-                                "type": "string"
-                            },
-                            "primary": {
-                                "$id": "#/properties/shoes/items/anyOf/0/properties/primary",
-                                "type": "boolean"
-                            },
-                            "name": {
-                                "$id": "#/properties/shoes/items/anyOf/0/properties/name",
-                                "type": "string"
-                            },
-                            "resource_state": {
-                                "$id": "#/properties/shoes/items/anyOf/0/properties/resource_state",
-                                "type": "integer"
-                            },
-                            "distance": {
-                                "$id": "#/properties/shoes/items/anyOf/0/properties/distance",
-                                "type": "integer"
-                            }
-                        }
-                    }
-                ]
+                "$ref": "#/definitions/SummaryGear"
             }
         }
     }

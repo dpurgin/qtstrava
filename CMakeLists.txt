@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.14)
 project(qtstrava LANGUAGES CXX)
 
 option(QTSTRAVA_BUILD_EXAMPLES "Build examples" OFF)
+option(QTSTRAVA_BUILD_TESTS "Build tests" OFF)
 
 include(FetchContent)
 
@@ -26,7 +27,7 @@ FetchContent_Declare(expected-lite
     GIT_TAG v0.4.0
     GIT_SHALLOW TRUE
 )
-FetchContent_Declare(json
+FetchContent_Declare(nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
     GIT_TAG v3.9.1
     GIT_SHALLOW TRUE
@@ -34,7 +35,14 @@ FetchContent_Declare(json
 set(JSON_BuildTests OFF CACHE BOOL "")
 set(JSON_Install OFF CACHE BOOL "")
 
-FetchContent_Declare(json-schema-validator
+FetchContent_Declare(nlohmann_json_qt
+    GIT_REPOSITORY https://github.com/dpurgin/nlohmann_json_qt.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+)
+set(JSON_QT_BUILD_TESTS OFF CACHE BOOL "")
+
+FetchContent_Declare(nlohmann_json_schema
     GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git
     GIT_TAG 2.1.0
     GIT_SHALLOW TRUE
@@ -46,8 +54,9 @@ FetchContent_MakeAvailable(
     qtpromise
     range-v3
     expected-lite
-    json
-    json-schema-validator
+    nlohmann_json
+    nlohmann_json_qt
+    nlohmann_json_schema
 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -64,6 +73,8 @@ add_library(qtstrava SHARED
     include/QtStrava/Model/error.h
     include/QtStrava/Model/fault.h
     include/QtStrava/Model/summaryactivity.h
+    include/QtStrava/Model/summaryclub.h
+    include/QtStrava/Model/summarygear.h
     include/QtStrava/client.h
     include/QtStrava/deserializererror.h
     include/QtStrava/networkerror.h
@@ -75,6 +86,8 @@ add_library(qtstrava SHARED
     src/Model/error.cpp
     src/Model/fault.cpp
     src/Model/summaryactivity.cpp
+    src/Model/summaryclub.cpp
+    src/Model/summarygear.cpp
     src/client.cpp
     src/deserializererror.cpp
     src/networkerror.cpp
@@ -91,6 +104,7 @@ target_link_libraries(qtstrava
     PRIVATE
         Qt5::Network
         range-v3
+        nlohmann_json_qt
         nlohmann_json_schema_validator
         expected-lite
 )
@@ -99,4 +113,9 @@ target_include_directories(qtstrava PUBLIC include)
 
 if (QTSTRAVA_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if (QTSTRAVA_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
 endif()

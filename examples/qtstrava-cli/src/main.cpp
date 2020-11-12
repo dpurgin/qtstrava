@@ -43,19 +43,31 @@ int main(int argc, char *argv[])
         client.setAccessToken(authorizationHandler.accessToken());
     });
 
-    client.getLoggedInAthlete()
-        .then([](const QtStrava::Model::DetailedAthlete &athlete) { qDebug() << athlete; })
-        .fail([](const QtStrava::Model::Fault &fault) { qWarning() << fault; })
-        .fail([](const QtStrava::DeserializerError &error) { qWarning() << error; })
-        .fail([](const QtStrava::NetworkError &error) { qWarning() << error; });
+    authorizationHandler.grant().then([&]() {
+        client.getLoggedInAthlete()
+            .then([](const QtStrava::Model::DetailedAthlete &athlete) {
+                qDebug() << athlete;
+                qDebug() << "Bikes:" << athlete.bikes();
+            })
+            .fail([](const QtStrava::Model::Fault &fault) { qWarning() << fault; })
+            .fail([](const QtStrava::DeserializerError &error) { qWarning() << error; })
+            .fail([](const QtStrava::NetworkError &error) { qWarning() << error; });
 
-    //    client.getLoggedInAthleteActivities(std::nullopt, std::nullopt)
-    //        .then([](const QVector<QtStrava::Model::SummaryActivity> &activities) {
-    //            qDebug() << activities;
-    //        })
-    //        .fail([](const QtStrava::Model::Fault &fault) { qWarning() << fault; })
-    //        .fail([](const QtStrava::DeserializerError &error) { qWarning() << error; })
-    //        .fail([](const QtStrava::NetworkError &error) { qWarning() << error; });
+        //        client.getLoggedInAthleteActivities(std::nullopt, std::nullopt, 1, 1)
+        //            .then([](const QVector<QtStrava::Model::SummaryActivity> &activities) {
+        //                qDebug() << activities;
+        //            })
+        //            .fail([](const QtStrava::Model::Fault &fault) {
+        //                //
+        //                qWarning() << fault;
+        //            })
+        //            .fail([](const QtStrava::DeserializerError &error) { //
+        //                qWarning() << error;
+        //            })
+        //            .fail([](const QtStrava::NetworkError &error) { //
+        //                qWarning() << error;
+        //            });
+    });
 
     return app.exec();
 }

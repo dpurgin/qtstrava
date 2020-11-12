@@ -3,18 +3,15 @@
 //
 // Licensed under the MIT license. See LICENSE for details.
 
-#include <QtStrava/Model/detailedathlete.h>
-
-#include <QtCore/qdebug.h>
+#include <QtStrava/Model/summarygear.h>
 
 namespace QtStrava::Model {
-QDebug operator<<(QDebug dbg, const DetailedAthlete &athlete)
+
+QDebug operator<<(QDebug dbg, const QtStrava::Model::SummaryGear &summaryGear)
 {
     QDebugStateSaver saver{dbg};
-    dbg.nospace() << "StravaDetailedAthlete[id=" << athlete.id()
-                  << ", firstName=" << athlete.firstName() << ", lastName=" << athlete.lastName()
+    dbg.nospace() << "SummaryGear[id=" << summaryGear.id() << ", name=" << summaryGear.name()
                   << "]";
     return dbg;
 }
-
 } // namespace QtStrava::Model

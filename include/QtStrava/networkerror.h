@@ -17,7 +17,7 @@ class QTSTRAVA_EXPORT NetworkError
 public:
     NetworkError(QString errorText) : m_errorText{errorText} {}
 
-    QString errorText() const { return m_errorText; }
+    [[nodiscard]] QString errorText() const { return m_errorText; }
 
 private:
     QString m_errorText;

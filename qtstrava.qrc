@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>schemas/Fault.schema.json</file>
         <file>schemas/DetailedAthlete.schema.json</file>
+        <file>schemas/SummaryActivity.schema.json</file>
     </qresource>
 </RCC>

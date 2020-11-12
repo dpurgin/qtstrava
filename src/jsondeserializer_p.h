@@ -20,26 +20,16 @@
 #include <QtStrava/Model/summaryactivity.h>
 #include <QtStrava/deserializererror.h>
 
+#include <nlohmann/json-qt.hpp>
 #include <nlohmann/json-schema.hpp>
 #include <nlohmann/json.hpp>
 
-inline void from_json(const nlohmann::json &j, QDateTime &dateTime)
+namespace QtStrava {
+inline void from_json(const nlohmann::json &j, ResourceState &resourceState)
 {
-    dateTime = QDateTime::fromString(QString::fromStdString(j.get<std::string>()));
+    resourceState = static_cast<ResourceState>(j.get<int>());
 }
-
-inline void from_json(const nlohmann::json &j, QString &string)
-{
-    string = QString::fromStdString(j.get<std::string>());
-}
-
-template<typename T>
-inline void from_json(const nlohmann::json &j, QVector<T> &vector)
-{
-    for (const auto &item : j) {
-        vector.push_back(item.get<T>());
-    }
-}
+} // namespace QtStrava
 
 namespace QtStrava::Model {
 
@@ -65,11 +55,40 @@ inline void from_json(const nlohmann::json &j, SummaryActivity &activity)
     activity.setStartDate(j["start_date"].get<QDateTime>());
 }
 
+inline void from_json(const nlohmann::json &j, SummaryClub &club) {}
+
+inline void from_json(const nlohmann::json &j, SummaryGear &gear)
+{
+    gear.setId(j["id"].get<QString>());
+    gear.setName(j["name"].get<QString>());
+    gear.setPrimary(j["primary"].get<bool>());
+    gear.setResourceState(j["resource_state"].get<ResourceState>());
+    gear.setDistance(j["distance"].get<qreal>());
+}
+
 inline void from_json(const nlohmann::json &j, DetailedAthlete &detailedAthlete)
 {
     detailedAthlete.setId(j["id"].get<long>());
     detailedAthlete.setFirstName(j["firstname"].get<QString>());
     detailedAthlete.setLastName(j["lastname"].get<QString>());
+    detailedAthlete.setResourceState(j["resource_state"].get<ResourceState>());
+    detailedAthlete.setProfileMedium(j["profile_medium"].get<QUrl>());
+    detailedAthlete.setProfile(j["profile"].get<QUrl>());
+    detailedAthlete.setCity(j["city"].get<QString>());
+    detailedAthlete.setState(j["state"].get<QString>());
+    detailedAthlete.setCountry(j["country"].get<QString>());
+    detailedAthlete.setSex(j["sex"].get<QString>());
+    detailedAthlete.setSummit(j["summit"].get<bool>());
+    detailedAthlete.setCreatedAt(j["created_at"].get<QDateTime>());
+    detailedAthlete.setUpdatedAt(j["updated_at"].get<QDateTime>());
+    detailedAthlete.setFollowerCount(j["follower_count"].get<int>());
+    detailedAthlete.setFriendCount(j["friend_count"].get<int>());
+    detailedAthlete.setMeasurementPreference(j["measurement_preference"].get<QString>());
+    detailedAthlete.setFtp(j["ftp"].get<int>());
+    detailedAthlete.setWeight(j["weight"].get<qreal>());
+    detailedAthlete.setClubs(j["clubs"].get<QVector<SummaryClub>>());
+    detailedAthlete.setBikes(j["bikes"].get<QVector<SummaryGear>>());
+    detailedAthlete.setShoes(j["shoes"].get<QVector<SummaryGear>>());
 }
 } // namespace QtStrava::Model
 
@@ -87,6 +106,14 @@ struct ExtractModel<QVector<T>>
     using Type = T;
 };
 
+template<typename T>
+struct IsVectorOfT : std::false_type
+{};
+
+template<typename T>
+struct IsVectorOfT<QVector<T>> : std::true_type
+{};
+
 template<typename T, typename Model = typename ExtractModel<T>::Type>
 nonstd::expected<T, DeserializerError> deserialize(const QByteArray &data)
 {
@@ -96,21 +123,38 @@ nonstd::expected<T, DeserializerError> deserialize(const QByteArray &data)
         QFile schemaFile{Model::JsonSchema};
 
         if (!schemaFile.open(QIODevice::ReadOnly)) {
-            return nonstd::make_unexpected(QString{"Unable to open schema %1: %2"}
-                                               .arg(Model::JsonSchema)
-                                               .arg(schemaFile.errorString()));
+            return nonstd::make_unexpected(DeserializerError{data,
+                                                             QString{"Unable to open schema %1: %2"}
+                                                                 .arg(Model::JsonSchema)
+                                                                 .arg(schemaFile.errorString())});
         }
 
         auto schemaData = schemaFile.readAll();
 
         auto schemaDoc = nlohmann::json::parse(std::cbegin(schemaData), std::cend(schemaData));
 
-        nlohmann::json_schema::json_validator validator{schemaDoc};
-        validator.validate(doc);
+        if constexpr (IsVectorOfT<T>::value) {
+            schemaDoc.erase("$schema");
+
+            nlohmann::json rootSchema{{"$schema", "http://json-schema.org/draft-07/schema"},
+                                      {"type", "array"},
+                                      {"items", schemaDoc}};
+
+            if (schemaDoc.contains("definitions")) {
+                rootSchema["definitions"] = schemaDoc["definitions"];
+                schemaDoc.erase("definitions");
+            }
+
+            nlohmann::json_schema::json_validator validator{rootSchema};
+            validator.validate(doc);
+        } else {
+            nlohmann::json_schema::json_validator validator{schemaDoc};
+            validator.validate(doc);
+        }
 
         return doc.get<T>();
     } catch (std::exception &e) {
-        return nonstd::make_unexpected(DeserializerError{e.what()});
+        return nonstd::make_unexpected(DeserializerError{data, e.what()});
     }
 }
 
