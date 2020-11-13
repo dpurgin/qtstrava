@@ -102,6 +102,10 @@ set(QTSTRAVA_RESOURCES qtstrava.qrc)
 if (QTSTRAVA_BUILD_SHARED_LIBS)
     add_library(qtstrava SHARED ${QTSTRAVA_HEADERS} ${QTSTRAVA_SOURCES} ${QTSTRAVA_RESOURCES})
     target_compile_definitions(qtstrava PUBLIC QTSTRAVA_LIBRARY_SHARED)
+    set_target_properties(nlohmann_json_schema_validator
+        PROPERTIES
+            POSITION_INDEPENDENT_CODE ON
+    )
 else()
     add_library(qtstrava STATIC ${QTSTRAVA_HEADERS} ${QTSTRAVA_SOURCES} ${QTSTRAVA_RESOURCES})
 endif()
