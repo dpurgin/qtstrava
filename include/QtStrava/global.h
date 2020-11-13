@@ -3,10 +3,12 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qloggingcategory.h>
 
-#if defined(QTSTRAVA_LIBRARY)
+#if defined(QTSTRAVA_LIBRARY) && defined(QTSTRAVA_LIBRARY_SHARED)
 #define QTSTRAVA_EXPORT Q_DECL_EXPORT
-#else
+#elif defined(QTSTRAVA_LIBRARY_SHARED)
 #define QTSTRAVA_EXPORT Q_DECL_IMPORT
+#else
+#define QTSTRAVA_EXPORT
 #endif
 
 namespace QtStrava::Private {
