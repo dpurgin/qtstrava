@@ -7,8 +7,9 @@ cmake_minimum_required(VERSION 3.14)
 
 project(qtstrava LANGUAGES CXX)
 
-option(QTSTRAVA_BUILD_EXAMPLES "Build examples" OFF)
-option(QTSTRAVA_BUILD_TESTS "Build tests" OFF)
+option(QTSTRAVA_BUILD_EXAMPLES "Build QtStrava examples" OFF)
+option(QTSTRAVA_BUILD_TESTS "Build QtStrava tests" OFF)
+option(QTSTRAVA_BUILD_SHARED_LIBS "Build QtStrava as shared library" OFF)
 
 include(FetchContent)
 
@@ -69,7 +70,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5 COMPONENTS Core Network NetworkAuth Gui REQUIRED)
 
-add_library(qtstrava SHARED
+add_library(qtstrava
     include/QtStrava/Model/detailedathlete.h
     include/QtStrava/Model/error.h
     include/QtStrava/Model/fault.h
@@ -111,6 +112,10 @@ target_link_libraries(qtstrava
 )
 target_compile_definitions(qtstrava PRIVATE QTSTRAVA_LIBRARY)
 target_include_directories(qtstrava PUBLIC include)
+
+if (QTSTRAVA_BUILD_SHARED_LIBS)
+    target_compile_definitions(qtstrava PUBLIC QTSTRAVA_LIBRARY_SHARED)
+endif()
 
 if (QTSTRAVA_BUILD_EXAMPLES)
     add_subdirectory(examples)
