@@ -14,6 +14,11 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix: 
+        shared: [ "OFF", "ON" ]
+      fail-fast: false 
+
     steps:
     - uses: actions/checkout@v2
     
@@ -37,7 +42,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DQTSTRAVA_BUILD_EXAMPLES=ON -DQTSTRAVA_BUILD_TESTS=ON
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DQTSTRAVA_BUILD_EXAMPLES=ON -DQTSTRAVA_BUILD_TESTS=ON -DQTSTRAVA_BUILD_SHARED_LIBS=${{matrix.shared}}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
