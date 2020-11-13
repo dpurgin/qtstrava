@@ -11,16 +11,16 @@ option(QTSTRAVA_BUILD_EXAMPLES "Build QtStrava examples" OFF)
 option(QTSTRAVA_BUILD_TESTS "Build QtStrava tests" OFF)
 option(QTSTRAVA_BUILD_SHARED_LIBS "Build QtStrava as shared library" OFF)
 
+message("QtStrava Configuration:")
+message("    Examples: ${QTSTRAVA_BUILD_EXAMPLES}")
+message("    Tests: ${QTSTRAVA_BUILD_TESTS}")
+message("    Shared libs: ${QTSTRAVA_BUILD_SHARED_LIBS}")
+
 include(FetchContent)
 
 FetchContent_Declare(qtpromise
     GIT_REPOSITORY https://github.com/simonbrunel/qtpromise.git
     GIT_TAG v0.6.0
-    GIT_SHALLOW TRUE
-)
-FetchContent_Declare(range-v3
-    GIT_REPOSITORY https://github.com/ericniebler/range-v3.git
-    GIT_TAG 0.11.0
     GIT_SHALLOW TRUE
 )
 FetchContent_Declare(expected-lite
@@ -50,11 +50,9 @@ FetchContent_Declare(nlohmann_json_schema
 )
 set(BUILD_TESTS OFF CACHE BOOL "")
 set(BUILD_EXAMPLES OFF CACHE BOOL "")
-set(BUILD_SHARED_LIBS ON CACHE BOOL "")
 
 FetchContent_MakeAvailable(
     qtpromise
-    range-v3
     expected-lite
     nlohmann_json
     nlohmann_json_qt
@@ -70,7 +68,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5 COMPONENTS Core Network NetworkAuth Gui REQUIRED)
 
-add_library(qtstrava
+set(QTSTRAVA_HEADERS
     include/QtStrava/Model/detailedathlete.h
     include/QtStrava/Model/error.h
     include/QtStrava/Model/fault.h
@@ -83,7 +81,9 @@ add_library(qtstrava
     include/QtStrava/global.h
 
     src/jsondeserializer_p.h
+)
 
+set(QTSTRAVA_SOURCES
     src/Model/detailedathlete.cpp
     src/Model/error.cpp
     src/Model/fault.cpp
@@ -95,9 +95,16 @@ add_library(qtstrava
     src/networkerror.cpp
     src/global.cpp
     src/jsondeserializer.cpp
-
-    qtstrava.qrc
 )
+
+set(QTSTRAVA_RESOURCES qtstrava.qrc)
+
+if (QTSTRAVA_BUILD_SHARED_LIBS)
+    add_library(qtstrava SHARED ${QTSTRAVA_HEADERS} ${QTSTRAVA_SOURCES} ${QTSTRAVA_RESOURCES})
+    target_compile_definitions(qtstrava PUBLIC QTSTRAVA_LIBRARY_SHARED)
+else()
+    add_library(qtstrava STATIC ${QTSTRAVA_HEADERS} ${QTSTRAVA_SOURCES} ${QTSTRAVA_RESOURCES})
+endif()
 
 target_link_libraries(qtstrava
     PUBLIC
@@ -105,17 +112,12 @@ target_link_libraries(qtstrava
         qtpromise
     PRIVATE
         Qt5::Network
-        range-v3
         nlohmann_json_qt
         nlohmann_json_schema_validator
         expected-lite
 )
 target_compile_definitions(qtstrava PRIVATE QTSTRAVA_LIBRARY)
 target_include_directories(qtstrava PUBLIC include)
-
-if (QTSTRAVA_BUILD_SHARED_LIBS)
-    target_compile_definitions(qtstrava PUBLIC QTSTRAVA_LIBRARY_SHARED)
-endif()
 
 if (QTSTRAVA_BUILD_EXAMPLES)
     add_subdirectory(examples)
