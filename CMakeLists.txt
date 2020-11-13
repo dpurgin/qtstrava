@@ -49,6 +49,7 @@ FetchContent_Declare(nlohmann_json_schema
 )
 set(BUILD_TESTS OFF CACHE BOOL "")
 set(BUILD_EXAMPLES OFF CACHE BOOL "")
+set(BUILD_SHARED_LIBS ON CACHE BOOL "")
 
 FetchContent_MakeAvailable(
     qtpromise
