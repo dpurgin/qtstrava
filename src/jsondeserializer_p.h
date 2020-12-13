@@ -48,7 +48,7 @@ inline void from_json(const nlohmann::json &j, Fault &fault)
 
 inline void from_json(const nlohmann::json &j, SummaryActivity &activity)
 {
-    activity.setId(j["id"].get<long>());
+    activity.setId(j["id"].get<quint64>());
     activity.setName(j["name"].get<QString>());
     activity.setDistance(j["distance"].get<qreal>());
     activity.setMovingTime(j["movingTime"].get<int>());
@@ -68,7 +68,7 @@ inline void from_json(const nlohmann::json &j, SummaryGear &gear)
 
 inline void from_json(const nlohmann::json &j, DetailedAthlete &detailedAthlete)
 {
-    detailedAthlete.setId(j["id"].get<long>());
+    detailedAthlete.setId(j["id"].get<quint64>());
     detailedAthlete.setFirstName(j["firstname"].get<QString>());
     detailedAthlete.setLastName(j["lastname"].get<QString>());
     detailedAthlete.setResourceState(j["resource_state"].get<ResourceState>());

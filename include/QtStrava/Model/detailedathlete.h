@@ -24,8 +24,8 @@ class QTSTRAVA_EXPORT DetailedAthlete
 public:
     static constexpr auto JsonSchema{":/schemas/DetailedAthlete.schema.json"};
 
-    [[nodiscard]] long id() const { return m_id; }
-    void setId(long id) { m_id = id; }
+    [[nodiscard]] quint64 id() const { return m_id; }
+    void setId(quint64 id) { m_id = id; }
 
     [[nodiscard]] QString firstName() const { return m_firstName; }
     void setFirstName(const QString &firstName) { m_firstName = firstName; }
@@ -91,7 +91,7 @@ public:
     void setShoes(const QVector<SummaryGear> &shoes) { m_shoes = shoes; }
 
 private:
-    long m_id{-1};
+    quint64 m_id{0};
     ResourceState m_resourceState;
     QString m_firstName;
     QString m_lastName;

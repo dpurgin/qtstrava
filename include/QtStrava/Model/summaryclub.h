@@ -15,14 +15,14 @@ namespace QtStrava::Model {
 class QTSTRAVA_EXPORT SummaryClub
 {
 public:
-    [[nodiscard]] long id() const;
-    void setId(long id);
+    [[nodiscard]] quint64 id() const;
+    void setId(quint64 id);
 
     [[nodiscard]] QString name() const;
     void setName(const QString &name);
 
 private:
-    long m_id{0};
+    quint64 m_id{0};
     QString m_name;
 };
 

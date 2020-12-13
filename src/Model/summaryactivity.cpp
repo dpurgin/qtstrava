@@ -9,12 +9,12 @@
 
 namespace QtStrava::Model {
 
-long SummaryActivity::id() const
+quint64 SummaryActivity::id() const
 {
     return m_id;
 }
 
-void SummaryActivity::setId(long id)
+void SummaryActivity::setId(quint64 id)
 {
     m_id = id;
 }

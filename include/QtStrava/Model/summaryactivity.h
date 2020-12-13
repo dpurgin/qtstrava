@@ -18,8 +18,8 @@ class QTSTRAVA_EXPORT SummaryActivity
 public:
     static constexpr auto JsonSchema{":/schemas/SummaryActivity.schema.json"};
 
-    long id() const;
-    void setId(long id);
+    quint64 id() const;
+    void setId(quint64 id);
 
     QString name() const;
     void setName(const QString &name);
@@ -43,7 +43,7 @@ public:
     void setGearId(const QString &gearId);
 
 private:
-    long m_id{-1};
+    quint64 m_id{0};
     QString m_name;
     qreal m_distance{0};
     int m_movingTime{0};
