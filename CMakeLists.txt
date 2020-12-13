@@ -7,8 +7,17 @@ cmake_minimum_required(VERSION 3.14)
 
 project(qtstrava LANGUAGES CXX)
 
-option(QTSTRAVA_BUILD_EXAMPLES "Build QtStrava examples" OFF)
-option(QTSTRAVA_BUILD_TESTS "Build QtStrava tests" OFF)
+# https://stackoverflow.com/questions/25199677/how-to-detect-if-current-scope-has-a-parent-in-cmake
+get_directory_property(hasParent PARENT_DIRECTORY)
+
+if (hasParent)
+    option(QTSTRAVA_BUILD_EXAMPLES "Build QtStrava examples" OFF)
+    option(QTSTRAVA_BUILD_TESTS "Build QtStrava tests" OFF)
+else()
+    option(QTSTRAVA_BUILD_EXAMPLES "Build QtStrava examples" ON)
+    option(QTSTRAVA_BUILD_TESTS "Build QtStrava tests" ON)
+endif()
+
 option(QTSTRAVA_BUILD_SHARED_LIBS "Build QtStrava as shared library" OFF)
 
 message("QtStrava Configuration:")
