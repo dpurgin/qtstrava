@@ -38,7 +38,14 @@ public:
     // https://developers.strava.com/docs/reference/#api-Athletes-getLoggedInAthlete
     [[nodiscard]] QtPromise::QPromise<Model::DetailedAthlete> getLoggedInAthlete();
 
-    // https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities
+     */
     [[nodiscard]] QtPromise::QPromise<QVector<Model::SummaryActivity>> getLoggedInAthleteActivities(
         std::optional<QDateTime> before,
         std::optional<QDateTime> after,

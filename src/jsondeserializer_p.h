@@ -51,7 +51,7 @@ inline void from_json(const nlohmann::json &j, SummaryActivity &activity)
     activity.setId(j["id"].get<quint64>());
     activity.setName(j["name"].get<QString>());
     activity.setDistance(j["distance"].get<qreal>());
-    activity.setMovingTime(j["movingTime"].get<int>());
+    activity.setMovingTime(j["moving_time"].get<int>());
     activity.setStartDate(j["start_date"].get<QDateTime>());
 }
 
