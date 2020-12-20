@@ -243,7 +243,7 @@ QtPromise::QPromise<Model::DetailedActivity> Client::createActivity(
         QVariantMap parameters{{"name", name},
                                {"type", toString(type)},
                                {"start_date_local", startDateLocal.toString(Qt::ISODate)},
-                               {"elapsed_time", elapsedTime.count()},
+                               {"elapsed_time", QVariant::fromValue(elapsedTime.count())},
                                {"description",
                                 description.has_value() ? QVariant{*description} : QVariant{}},
                                {"distance", distance.has_value() ? QVariant{*distance} : QVariant{}},
