@@ -68,7 +68,9 @@ inline void handleNetworkSuccess(QNetworkReply *reply, const Resolve &resolve, c
 }
 
 template<typename ExpectedModel, typename Resolve, typename Reject>
-inline auto networkReplyHandler(QNetworkReply *reply, const Resolve &resolve, const Reject &reject)
+[[nodiscard]] inline auto networkReplyHandler(QNetworkReply *reply,
+                                              const Resolve &resolve,
+                                              const Reject &reject)
 {
     return [reply, resolve, reject]() {
         if (reply->error() != QNetworkReply::NoError) {
@@ -79,6 +81,19 @@ inline auto networkReplyHandler(QNetworkReply *reply, const Resolve &resolve, co
 
         reply->deleteLater();
     };
+}
+
+[[nodiscard]] inline QUrlQuery toUrlQuery(const QVariantMap &parameters)
+{
+    QUrlQuery query;
+    for (auto cit = std::cbegin(parameters); cit != std::cend(parameters); ++cit) {
+        if (cit.value().isNull()) {
+            continue;
+        }
+
+        query.addQueryItem(cit.key(), cit.value().toString());
+    }
+    return query;
 }
 
 class ClientPrivate
@@ -106,18 +121,7 @@ QNetworkRequest ClientPrivate::createRequest(const QString &endPoint, const QVar
 {
     QUrl url{m_server};
     url.setPath(m_server.path() + endPoint);
-
-    QStringList queryItems;
-
-    for (auto cit = std::cbegin(parameters); cit != std::cend(parameters); ++cit) {
-        if (cit.value().isNull()) {
-            continue;
-        }
-
-        queryItems << QString{"%1=%2"}.arg(cit.key()).arg(cit.value().toString());
-    }
-
-    url.setQuery(queryItems.join('&'));
+    url.setQuery(toUrlQuery(parameters));
 
     QNetworkRequest request{url};
     request.setRawHeader("Authorization", m_authorizationHeaderValue);

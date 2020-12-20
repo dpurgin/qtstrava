@@ -20,7 +20,7 @@ private slots:
 
 void SchemataTest::initTestCase()
 {
-    // Call something in the library to initialize resources
+    // Call something in the library to initialize the resources
     QtStrava::Client client;
     Q_UNUSED(client.accessToken());
 }
