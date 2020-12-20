@@ -22,7 +22,7 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v2.9.0
       with: 
-        version: $${{matrix.qt}}
+        version: ${{matrix.qt}}
         modules: 'qtnetworkauth'
         extra: '--archives qt qtbase qtnetworkauth icu'
 
