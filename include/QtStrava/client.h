@@ -11,11 +11,13 @@
 #include <QtCore/qurl.h>
 #include <QtPromise>
 
+#include <chrono>
 #include <optional>
 
 namespace QtStrava {
 
 namespace Model {
+class DetailedActivity;
 class DetailedAthlete;
 class ClientPrivate;
 class SummaryActivity;
@@ -51,6 +53,24 @@ public:
         std::optional<QDateTime> after,
         int page = 1,
         int perPage = 30);
+
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *   
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Activities-createActivity
+     */
+    [[nodiscard]] QtPromise::QPromise<Model::DetailedActivity> createActivity(
+        const QString &name,
+        ActivityType type,
+        const QDateTime &startDateLocal,
+        std::chrono::seconds elapsedTime,
+        std::optional<QString> description,
+        std::optional<qreal> distance,
+        std::optional<bool> trainer,
+        std::optional<bool> commute);
 
 Q_SIGNALS:
     void accessTokenChanged();

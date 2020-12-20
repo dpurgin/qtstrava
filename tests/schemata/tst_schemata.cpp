@@ -2,6 +2,7 @@
 
 #include <nlohmann/json-schema.hpp>
 
+#include <QtStrava/Model/detailedactivity.h>
 #include <QtStrava/Model/detailedathlete.h>
 #include <QtStrava/Model/fault.h>
 #include <QtStrava/Model/summaryactivity.h>
@@ -31,9 +32,10 @@ void SchemataTest::validateModelSchema_data()
 
     QTest::addColumn<QString>("fileName");
 
+    QTest::addRow("DetailedActivity") << DetailedActivity::JsonSchema;
     QTest::addRow("DetailedAthlete") << DetailedAthlete::JsonSchema;
     QTest::addRow("Fault") << Fault::JsonSchema;
-    QTest::addRow("SummaryActivity") << SummaryActivity::JsonSchema;
+    QTest::addRow("SummaryActivity") << SummaryActivity::JsonSchema;    
 }
 
 void SchemataTest::validateModelSchema()

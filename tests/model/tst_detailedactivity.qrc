@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="DetailedActivity1.json">data/DetailedActivity1.json</file>
+        <file alias="DetailedActivity2.json">data/DetailedActivity2.json</file>
+    </qresource>
+</RCC>

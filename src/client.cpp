@@ -7,6 +7,7 @@
 
 #include "jsondeserializer_p.h"
 
+#include <QtStrava/Model/detailedactivity.h>
 #include <QtStrava/Model/detailedathlete.h>
 #include <QtStrava/Model/fault.h>
 #include <QtStrava/Model/summaryactivity.h>
@@ -16,6 +17,7 @@
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
+#include <QtCore/qurlquery.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
@@ -111,6 +113,12 @@ class ClientPrivate
              const Resolve &resolve,
              const Reject &reject);
 
+    template<typename ExpectedModel, typename Resolve, typename Reject>
+    void post(const QString &endPoint,
+              const QVariantMap &parameters,
+              const Resolve &resolve,
+              const Reject &reject);
+
     QNetworkAccessManager m_nam;
     QUrl m_server;
     QString m_accessToken;
@@ -140,6 +148,26 @@ void ClientPrivate::get(const QString &endPoint,
     qCDebug(Private::network) << "Requesting:" << request.url();
 
     QNetworkReply *reply = m_nam.get(request);
+
+    QObject::connect(reply,
+                     &QNetworkReply::finished,
+                     networkReplyHandler<ExpectedModel>(reply, resolve, reject));
+}
+
+template<typename ExpectedModel, typename Resolve, typename Reject>
+void ClientPrivate::post(const QString &endPoint,
+                         const QVariantMap &parameters,
+                         const Resolve &resolve,
+                         const Reject &reject)
+{
+    QNetworkRequest request = createRequest(endPoint, {});
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QByteArray formData = toUrlQuery(parameters).toString(QUrl::FullyEncoded).toUtf8();
+
+    qCDebug(Private::network) << "Requesting:" << request.url() << ", form data:" << formData;
+
+    QNetworkReply *reply = m_nam.post(request, formData);
 
     QObject::connect(reply,
                      &QNetworkReply::finished,
@@ -197,4 +225,32 @@ QtPromise::QPromise<QVector<Model::SummaryActivity>> Client::getLoggedInAthleteA
         d->get<QVector<Model::SummaryActivity>>("/athlete/activities", parameters, resolve, reject);
     }};
 }
+
+QtPromise::QPromise<Model::DetailedActivity> Client::createActivity(
+    const QString &name,
+    ActivityType type,
+    const QDateTime &startDateLocal,
+    std::chrono::seconds elapsedTime,
+    std::optional<QString> description,
+    std::optional<qreal> distance,
+    std::optional<bool> trainer,
+    std::optional<bool> commute)
+{
+    Q_D(Client);
+
+    return QtPromise::QPromise<Model::DetailedActivity>{[=](const auto &resolve,
+                                                            const auto &reject) {
+        QVariantMap parameters{{"name", name},
+                               {"type", toString(type)},
+                               {"start_date_local", startDateLocal.toString(Qt::ISODate)},
+                               {"elapsed_time", elapsedTime.count()},
+                               {"description",
+                                description.has_value() ? QVariant{*description} : QVariant{}},
+                               {"distance", distance.has_value() ? QVariant{*distance} : QVariant{}},
+                               {"trainer", trainer.has_value() && *trainer ? 1 : QVariant{}},
+                               {"commute", commute.has_value() && *commute ? 1 : QVariant{}}};
+        d->post<Model::DetailedActivity>("/activities", parameters, resolve, reject);
+    }};
+}
+
 } // namespace QtStrava

@@ -14,6 +14,7 @@
 
 #include <nonstd/expected.hpp>
 
+#include <QtStrava/Model/detailedactivity.h>
 #include <QtStrava/Model/detailedathlete.h>
 #include <QtStrava/Model/error.h>
 #include <QtStrava/Model/fault.h>
@@ -37,6 +38,12 @@ inline void from_json(const nlohmann::json &j, ActivityType &activityType)
 } // namespace QtStrava
 
 namespace QtStrava::Model {
+
+inline void from_json(const nlohmann::json &j, MetaAthlete &athlete)
+{
+    athlete.setId(j["id"].get<quint64>());
+    athlete.setResourceState(j["resource_state"].get<ResourceState>());
+}
 
 inline void from_json(const nlohmann::json &j, Error &error)
 {
@@ -94,6 +101,20 @@ inline void from_json(const nlohmann::json &j, DetailedAthlete &detailedAthlete)
     detailedAthlete.setClubs(j["clubs"].get<QVector<SummaryClub>>());
     detailedAthlete.setBikes(j["bikes"].get<QVector<SummaryGear>>());
     detailedAthlete.setShoes(j["shoes"].get<QVector<SummaryGear>>());
+}
+
+inline void from_json(const nlohmann::json &j, DetailedActivity &detailedActivity)
+{
+    detailedActivity.setAthlete(j["athlete"].get<MetaAthlete>());
+    detailedActivity.setCommute(j["commute"].get<bool>());
+    detailedActivity.setDistance(j["distance"].get<qreal>());
+    detailedActivity.setElapsedTime(std::chrono::seconds{j["elapsed_time"].get<int>()});
+    detailedActivity.setId(j["id"].get<quint64>());
+    detailedActivity.setMovingTime(std::chrono::seconds{j["moving_time"].get<int>()});
+    detailedActivity.setName(j["name"].get<QString>());
+    detailedActivity.setResourceState(j["resource_state"].get<ResourceState>());
+    detailedActivity.setTrainer(j["trainer"].get<bool>());
+    detailedActivity.setType(j["type"].get<ActivityType>());
 }
 } // namespace QtStrava::Model
 
