@@ -29,6 +29,11 @@ inline void from_json(const nlohmann::json &j, ResourceState &resourceState)
 {
     resourceState = static_cast<ResourceState>(j.get<int>());
 }
+
+inline void from_json(const nlohmann::json &j, ActivityType &activityType)
+{
+    activityType = toActivityType(j.get<QString>());
+}
 } // namespace QtStrava
 
 namespace QtStrava::Model {

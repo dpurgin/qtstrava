@@ -17,10 +17,47 @@ Q_DECLARE_LOGGING_CATEGORY(network);
 
 namespace QtStrava {
 
+/*!
+ * https://developers.strava.com/docs/reference/#api-models-ActivityType
+ */
 enum class ActivityType {
-    Ride,
-    VirtualRide,
+    AlpineSki,
+    BackcountrySki,
+    Canoeing,
+    Crossfit,
     EBikeRide,
+    Elliptical,
+    Golf,
+    Handcycle,
+    Hike,
+    IceSkate,
+    InlineSkate,
+    Kayaking,
+    Kitesurf,
+    NordicSki,
+    Ride,
+    RockClimbing,
+    RollerSki,
+    Rowing,
+    Run,
+    Sail,
+    Skateboard,
+    Snowboard,
+    Snowshoe,
+    Soccer,
+    StairStepper,
+    StandUpPaddling,
+    Surfing,
+    Swim,
+    Velomobile,
+    VirtualRide,
+    VirtualRun,
+    Walk,
+    WeightTraining,
+    Wheelchair,
+    Windsurf,
+    Workout,
+    Yoga,
 
     Other
 };
@@ -33,4 +70,7 @@ enum class ResourceState {
     Summary,
     Detail
 };
+
+[[nodiscard]] extern QTSTRAVA_EXPORT QString toString(ActivityType activity);
+[[nodiscard]] extern QTSTRAVA_EXPORT ActivityType toActivityType(const QString &str);
 }
