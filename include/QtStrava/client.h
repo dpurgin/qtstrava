@@ -21,6 +21,7 @@ class DetailedActivity;
 class DetailedAthlete;
 class ClientPrivate;
 class SummaryActivity;
+class UpdatableActivity;
 } // namespace Model
 
 class ClientPrivate;
@@ -71,6 +72,17 @@ public:
         std::optional<qreal> distance,
         std::optional<bool> trainer,
         std::optional<bool> commute);
+
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *   
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Activities-updateActivityById
+     */
+    [[nodiscard]] QtPromise::QPromise<Model::DetailedActivity> updateActivityById(
+        quint64 id, const Model::UpdatableActivity &updatableActivity);
 
 Q_SIGNALS:
     void accessTokenChanged();

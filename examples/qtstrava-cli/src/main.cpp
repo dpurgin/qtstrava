@@ -22,6 +22,7 @@
 #include <QtStrava/Model/detailedathlete.h>
 #include <QtStrava/Model/fault.h>
 #include <QtStrava/Model/summaryactivity.h>
+#include <QtStrava/Model/updatableactivity.h>
 #include <QtStrava/client.h>
 #include <QtStrava/deserializererror.h>
 #include <QtStrava/networkerror.h>
@@ -205,6 +206,22 @@ static void createActivity(QtStrava::Client &stravaClient)
         .wait();
 }
 
+static void updateActivityById(QtStrava::Client &stravaClient)
+{
+    QtStrava::Model::UpdatableActivity updatableActivity;
+    updatableActivity.setName("Updated name");
+    updatableActivity.setCommute(true);
+    updatableActivity.setTrainer(true);
+    updatableActivity.setType(QtStrava::ActivityType::Yoga);
+
+    stravaClient.updateActivityById(4494857959, updatableActivity)
+        .then([](const QtStrava::Model::DetailedActivity &activity) { qDebug() << activity; })
+        .fail([](const QtStrava::Model::Fault &fault) { qWarning() << fault; })
+        .fail([](const QtStrava::DeserializerError &error) { qWarning() << error; })
+        .fail([](const QtStrava::NetworkError &error) { qWarning() << error; })
+        .wait();
+}
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app{argc, argv};
@@ -238,12 +255,16 @@ int main(int argc, char *argv[])
                     std::cout << "\n [1] getLoggedInAthlete";
                     std::cout << "\n [2] getLoggedInAthleteActivities";
                     std::cout << "\n [3] createActivity";
-                    std::cout << "\n\nEnter 0-3: ";
+                    std::cout << "\n [4] updateActivityById";
+                    std::cout << "\n\nEnter 0-4: ";
                     std::cin >> choice;
-                } while (choice < 0 || choice > 3);
+                } while (choice < 0 || choice > 4);
 
                 static QVector<std::function<void(QtStrava::Client &)>>
-                    functions{&getLoggedInAthlete, &getLoggedInAthleteActivities, &createActivity};
+                    functions{&getLoggedInAthlete,
+                              &getLoggedInAthleteActivities,
+                              &createActivity,
+                              &updateActivityById};
 
                 if (choice > 0) {
                     functions[choice - 1](stravaClient);
