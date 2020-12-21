@@ -22,6 +22,7 @@ class DetailedAthlete;
 class ClientPrivate;
 class SummaryActivity;
 class UpdatableActivity;
+class Upload;
 } // namespace Model
 
 class ClientPrivate;
@@ -83,6 +84,22 @@ public:
      */
     [[nodiscard]] QtPromise::QPromise<Model::DetailedActivity> updateActivityById(
         quint64 id, const Model::UpdatableActivity &updatableActivity);
+
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *   
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Uploads-createUpload
+     */
+    [[nodiscard]] QtPromise::QPromise<Model::Upload> createUpload(const QByteArray &file,
+                                                                  const QString &name,
+                                                                  const QString &description,
+                                                                  bool trainer,
+                                                                  bool commute,
+                                                                  DataType dataType,
+                                                                  const QString &externalId);
 
 Q_SIGNALS:
     void accessTokenChanged();

@@ -13,7 +13,9 @@ class QDebug;
 
 namespace QtStrava::Model {
 
-// https://developers.strava.com/docs/reference/#api-models-DetailedActivity
+/*! 
+ * https://developers.strava.com/docs/reference/#api-models-DetailedActivity
+ */
 class QTSTRAVA_EXPORT DetailedActivity
 {
 public:

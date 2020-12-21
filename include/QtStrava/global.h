@@ -71,6 +71,11 @@ enum class ResourceState {
     Detail
 };
 
+// Upload data type in https://developers.strava.com/docs/reference/#api-Uploads-createUpload
+enum class DataType { Fit, FitGz, Tcx, TcxGz, Gpx, GpxGz };
+
 [[nodiscard]] extern QTSTRAVA_EXPORT QString toString(ActivityType activity);
 [[nodiscard]] extern QTSTRAVA_EXPORT ActivityType toActivityType(const QString &str);
+
+[[nodiscard]] extern QTSTRAVA_EXPORT QString toString(DataType dataType);
 }

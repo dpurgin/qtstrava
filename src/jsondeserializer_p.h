@@ -19,6 +19,7 @@
 #include <QtStrava/Model/error.h>
 #include <QtStrava/Model/fault.h>
 #include <QtStrava/Model/summaryactivity.h>
+#include <QtStrava/Model/upload.h>
 #include <QtStrava/deserializererror.h>
 
 #include <nlohmann/json-qt.hpp>
@@ -115,6 +116,16 @@ inline void from_json(const nlohmann::json &j, DetailedActivity &detailedActivit
     detailedActivity.setResourceState(j["resource_state"].get<ResourceState>());
     detailedActivity.setTrainer(j["trainer"].get<bool>());
     detailedActivity.setType(j["type"].get<ActivityType>());
+}
+
+inline void from_json(const nlohmann::json &j, Upload &upload)
+{
+    upload.setId(j["id"].get<quint64>());
+    upload.setIdStr(j["idStr"].get<QString>());
+    upload.setExternalId(j["external_id"].get<QString>());
+    upload.setError(j["error"].get<QString>());
+    upload.setStatus(j["status"].get<QString>());
+    upload.setActivityId(j["activity_id"].get<quint64>());
 }
 } // namespace QtStrava::Model
 

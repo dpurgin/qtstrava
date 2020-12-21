@@ -246,4 +246,22 @@ ActivityType toActivityType(const QString &str)
     return activityTypes.value(str, ActivityType::Other);
 }
 
+QString toString(DataType dataType)
+{
+    switch (dataType) {
+    case DataType::Fit:
+        return "fit";
+    case DataType::FitGz:
+        return "fit.gz";
+    case DataType::Gpx:
+        return "gpx";
+    case DataType::GpxGz:
+        return "gpx.gz";
+    case DataType::Tcx:
+        return "tcx";
+    case DataType::TcxGz:
+        return "tcx.gz";
+    }
+}
+
 } // namespace QtStrava

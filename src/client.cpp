@@ -12,6 +12,7 @@
 #include <QtStrava/Model/fault.h>
 #include <QtStrava/Model/summaryactivity.h>
 #include <QtStrava/Model/updatableactivity.h>
+#include <QtStrava/Model/upload.h>
 #include <QtStrava/deserializererror.h>
 #include <QtStrava/networkerror.h>
 
@@ -299,6 +300,27 @@ QtPromise::QPromise<Model::DetailedActivity> Client::updateActivityById(
                                             resolve,
                                             reject);
         }};
+}
+
+QtPromise::QPromise<Model::Upload> Client::createUpload(const QByteArray &file,
+                                                        const QString &name,
+                                                        const QString &description,
+                                                        bool trainer,
+                                                        bool commute,
+                                                        DataType dataType,
+                                                        const QString &externalId)
+{
+    Q_D(Client);
+
+    return QtPromise::QPromise<Model::Upload>{[=](const auto &resolve, const auto &reject) {
+        QVariantMap parameters{{"name", name},
+                               {"description", description},
+                               {"trainer", trainer},
+                               {"commute", commute},
+                               {"data_type", toString(dataType)},
+                               {"external_id", externalId}};
+        d->post<Model::Upload>("/upload", parameters, resolve, reject);
+    }};
 }
 
 } // namespace QtStrava

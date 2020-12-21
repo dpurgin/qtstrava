@@ -87,6 +87,7 @@ set(QTSTRAVA_HEADERS
     include/QtStrava/Model/summaryclub.h
     include/QtStrava/Model/summarygear.h
     include/QtStrava/Model/updatableactivity.h
+    include/QtStrava/Model/upload.h
     include/QtStrava/client.h
     include/QtStrava/deserializererror.h
     include/QtStrava/networkerror.h
@@ -105,6 +106,7 @@ set(QTSTRAVA_SOURCES
     src/Model/summaryclub.cpp
     src/Model/summarygear.cpp
     src/Model/updatableactivity.cpp
+    src/Model/upload.cpp
     src/client.cpp
     src/deserializererror.cpp
     src/global.cpp

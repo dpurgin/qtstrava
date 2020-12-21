@@ -4,5 +4,6 @@
         <file>schemas/DetailedAthlete.schema.json</file>
         <file>schemas/SummaryActivity.schema.json</file>
         <file>schemas/DetailedActivity.schema.json</file>
+        <file>schemas/Upload.schema.json</file>
     </qresource>
 </RCC>
