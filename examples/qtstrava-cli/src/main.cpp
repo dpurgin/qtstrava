@@ -217,6 +217,7 @@ static void updateActivityById(QtStrava::Client &stravaClient)
     qInfo() << "\nupdateActivityById()";
     qInfo() << "====================";
 
+    std::string idStr;
     std::string nameStr;
     std::string trainerStr;
     std::string commuteStr;
@@ -225,6 +226,9 @@ static void updateActivityById(QtStrava::Client &stravaClient)
     // https://en.cppreference.com/w/cpp/io/basic_istream/ignore
     std::cin.clear();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::cout << "\nID: ";
+    std::getline(std::cin, idStr);
 
     std::cout << "\nName: ";
     std::getline(std::cin, nameStr);
@@ -238,7 +242,6 @@ static void updateActivityById(QtStrava::Client &stravaClient)
     std::cout << "\nCommute (true/false, default: false): ";
     std::getline(std::cin, commuteStr);
 
-    QString name = QString::fromStdString(nameStr);
     auto type = QtStrava::toActivityType(QString::fromStdString(activityTypeStr));
 
     bool trainer = !trainerStr.empty() && (trainerStr == "t" || trainerStr == "true");
@@ -250,7 +253,7 @@ static void updateActivityById(QtStrava::Client &stravaClient)
     updatableActivity.setTrainer(trainer);
     updatableActivity.setType(type.value_or(QtStrava::ActivityType::Other));
 
-    stravaClient.updateActivityById(4494857959, updatableActivity)
+    stravaClient.updateActivityById(std::stoull(idStr), updatableActivity)
         .then([](const QtStrava::Model::DetailedActivity &activity) { qDebug() << activity; })
         .fail([](const QtStrava::Model::Fault &fault) { qWarning() << fault; })
         .fail([](const QtStrava::DeserializerError &error) { qWarning() << error; })
@@ -328,6 +331,28 @@ static void createUpload(QtStrava::Client &stravaClient)
         .wait();
 }
 
+static void getUploadById(QtStrava::Client &stravaClient)
+{
+    qInfo() << "\ngetUploadById()";
+    qInfo() << "==============";
+
+    std::string idStr;
+
+    // https://en.cppreference.com/w/cpp/io/basic_istream/ignore
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::cout << "\nID: ";
+    std::getline(std::cin, idStr);
+
+    stravaClient.getUploadById(std::stoull(idStr))
+        .then([](const QtStrava::Model::Upload &upload) { qDebug() << upload; })
+        .fail([](const QtStrava::Model::Fault &fault) { qWarning() << fault; })
+        .fail([](const QtStrava::DeserializerError &error) { qWarning() << error; })
+        .fail([](const QtStrava::NetworkError &error) { qWarning() << error; })
+        .wait();
+}
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app{argc, argv};
@@ -363,16 +388,18 @@ int main(int argc, char *argv[])
                     std::cout << "\n [3] createActivity";
                     std::cout << "\n [4] updateActivityById";
                     std::cout << "\n [5] createUpload";
-                    std::cout << "\n\nEnter 0-5: ";
+                    std::cout << "\n [6] getUploadById";
+                    std::cout << "\n\nEnter 0-6: ";
                     std::cin >> choice;
-                } while (choice < 0 || choice > 5);
+                } while (choice < 0 || choice > 6);
 
                 static QVector<std::function<void(QtStrava::Client &)>>
                     functions{&getLoggedInAthlete,
                               &getLoggedInAthleteActivities,
                               &createActivity,
                               &updateActivityById,
-                              &createUpload};
+                              &createUpload,
+                              &getUploadById};
 
                 if (choice > 0) {
                     functions[choice - 1](stravaClient);

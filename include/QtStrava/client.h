@@ -103,6 +103,16 @@ public:
                                                                   DataType dataType,
                                                                   const QString &externalId);
 
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *   
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Uploads-getUploadById
+     */
+    [[nodiscard]] QtPromise::QPromise<Model::Upload> getUploadById(quint64 uploadId);
+
 Q_SIGNALS:
     void accessTokenChanged();
 

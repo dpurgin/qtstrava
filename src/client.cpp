@@ -372,4 +372,14 @@ QtPromise::QPromise<Model::Upload> Client::createUpload(QFile *file,
     }};
 }
 
+QtPromise::QPromise<Model::Upload> Client::getUploadById(quint64 uploadId)
+{
+    Q_D(Client);
+
+    return QtPromise::QPromise<Model::Upload>{
+        [d, uploadId](const auto &resolve, const auto &reject) {
+            d->get<Model::Upload>(QString{"/uploads/%1"}.arg(uploadId), {}, resolve, reject);
+        }};
+}
+
 } // namespace QtStrava
