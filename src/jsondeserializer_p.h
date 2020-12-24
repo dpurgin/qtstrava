@@ -34,7 +34,7 @@ inline void from_json(const nlohmann::json &j, ResourceState &resourceState)
 
 inline void from_json(const nlohmann::json &j, ActivityType &activityType)
 {
-    activityType = toActivityType(j.get<QString>());
+    activityType = toActivityType(j.get<QString>()).value_or(ActivityType::Other);
 }
 } // namespace QtStrava
 
@@ -121,11 +121,21 @@ inline void from_json(const nlohmann::json &j, DetailedActivity &detailedActivit
 inline void from_json(const nlohmann::json &j, Upload &upload)
 {
     upload.setId(j["id"].get<quint64>());
-    upload.setIdStr(j["idStr"].get<QString>());
-    upload.setExternalId(j["external_id"].get<QString>());
-    upload.setError(j["error"].get<QString>());
+    upload.setIdStr(j["id_str"].get<QString>());
+
+    if (!j["external_id"].is_null()) {
+        upload.setExternalId(j["external_id"].get<QString>());
+    }
+
+    if (!j["error"].is_null()) {
+        upload.setError(j["error"].get<QString>());
+    }
+
     upload.setStatus(j["status"].get<QString>());
-    upload.setActivityId(j["activity_id"].get<quint64>());
+
+    if (!j["activity_id"].is_null()) {
+        upload.setActivityId(j["activity_id"].get<quint64>());
+    }
 }
 } // namespace QtStrava::Model
 

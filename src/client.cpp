@@ -16,10 +16,13 @@
 #include <QtStrava/deserializererror.h>
 #include <QtStrava/networkerror.h>
 
+#include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qurlquery.h>
+#include <QtNetwork/qhttpmultipart.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
@@ -116,10 +119,16 @@ class ClientPrivate
              const Reject &reject);
 
     template<typename ExpectedModel, typename Resolve, typename Reject>
-    void post(const QString &endPoint,
-              const QVariantMap &parameters,
-              const Resolve &resolve,
-              const Reject &reject);
+    void postFormData(const QString &endPoint,
+                      const QVariantMap &parameters,
+                      const Resolve &resolve,
+                      const Reject &reject);
+
+    template<typename ExpectedModel, typename Resolve, typename Reject>
+    void postMultiPart(const QString &endPoint,
+                       QHttpMultiPart *multiPart,
+                       const Resolve &resolve,
+                       const Reject &reject);
 
     template<typename ExpectedModel, typename Resolve, typename Reject>
     void put(const QString &endPoint,
@@ -163,10 +172,10 @@ void ClientPrivate::get(const QString &endPoint,
 }
 
 template<typename ExpectedModel, typename Resolve, typename Reject>
-void ClientPrivate::post(const QString &endPoint,
-                         const QVariantMap &parameters,
-                         const Resolve &resolve,
-                         const Reject &reject)
+void ClientPrivate::postFormData(const QString &endPoint,
+                                 const QVariantMap &parameters,
+                                 const Resolve &resolve,
+                                 const Reject &reject)
 {
     QNetworkRequest request = createRequest(endPoint, {});
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
@@ -176,6 +185,24 @@ void ClientPrivate::post(const QString &endPoint,
     qCDebug(Private::network) << "POST" << request.url() << ", form data:" << formData;
 
     QNetworkReply *reply = m_nam.post(request, formData);
+
+    QObject::connect(reply,
+                     &QNetworkReply::finished,
+                     networkReplyHandler<ExpectedModel>(reply, resolve, reject));
+}
+
+template<typename ExpectedModel, typename Resolve, typename Reject>
+void ClientPrivate::postMultiPart(const QString &endPoint,
+                                  QHttpMultiPart *multiPart,
+                                  const Resolve &resolve,
+                                  const Reject &reject)
+{
+    QNetworkRequest request = createRequest(endPoint, {});
+
+    qCDebug(Private::network) << "POST" << request.url() << ", form data:" << multiPart;
+
+    QNetworkReply *reply = m_nam.post(request, multiPart);
+    multiPart->setParent(reply);
 
     QObject::connect(reply,
                      &QNetworkReply::finished,
@@ -277,7 +304,7 @@ QtPromise::QPromise<Model::DetailedActivity> Client::createActivity(
                                {"distance", distance.has_value() ? QVariant{*distance} : QVariant{}},
                                {"trainer", trainer.has_value() && *trainer ? 1 : QVariant{}},
                                {"commute", commute.has_value() && *commute ? 1 : QVariant{}}};
-        d->post<Model::DetailedActivity>("/activities", parameters, resolve, reject);
+        d->postFormData<Model::DetailedActivity>("/activities", parameters, resolve, reject);
     }};
 }
 
@@ -302,7 +329,7 @@ QtPromise::QPromise<Model::DetailedActivity> Client::updateActivityById(
         }};
 }
 
-QtPromise::QPromise<Model::Upload> Client::createUpload(const QByteArray &file,
+QtPromise::QPromise<Model::Upload> Client::createUpload(QFile *file,
                                                         const QString &name,
                                                         const QString &description,
                                                         bool trainer,
@@ -311,15 +338,37 @@ QtPromise::QPromise<Model::Upload> Client::createUpload(const QByteArray &file,
                                                         const QString &externalId)
 {
     Q_D(Client);
+    Q_ASSERT(file->isOpen());
 
     return QtPromise::QPromise<Model::Upload>{[=](const auto &resolve, const auto &reject) {
-        QVariantMap parameters{{"name", name},
-                               {"description", description},
-                               {"trainer", trainer},
-                               {"commute", commute},
-                               {"data_type", toString(dataType)},
-                               {"external_id", externalId}};
-        d->post<Model::Upload>("/upload", parameters, resolve, reject);
+        QHttpMultiPart *multiPart = new QHttpMultiPart{QHttpMultiPart::FormDataType};
+
+        auto makeHttpPart = [](const QString &key, const QByteArray &value) {
+            QHttpPart part;
+            part.setHeader(QNetworkRequest::ContentDispositionHeader,
+                           QString{"form-data; name=\"%1\""}.arg(key));
+            part.setBody(value);
+            return part;
+        };
+
+        multiPart->append(makeHttpPart("name", name.toUtf8()));
+        multiPart->append(makeHttpPart("description", description.toUtf8()));
+        multiPart->append(makeHttpPart("trainer", trainer ? "1" : "0"));
+        multiPart->append(makeHttpPart("commute", commute ? "1" : "0"));
+        multiPart->append(makeHttpPart("data_type", toString(dataType).toUtf8()));
+        multiPart->append(makeHttpPart("external_id", externalId.toUtf8()));
+
+        QFileInfo fileInfo{file->fileName()};
+
+        QHttpPart filePart;
+        filePart.setHeader(QNetworkRequest::ContentDispositionHeader,
+                           QString{"form-data; name=\"file\"; filename=\"%1\""}.arg(
+                               fileInfo.fileName()));
+        filePart.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
+        filePart.setBodyDevice(file);
+        multiPart->append(filePart);
+
+        d->postMultiPart<Model::Upload>("/uploads", multiPart, resolve, reject);
     }};
 }
 

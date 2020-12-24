@@ -14,6 +14,8 @@
 #include <chrono>
 #include <optional>
 
+class QFile;
+
 namespace QtStrava {
 
 namespace Model {
@@ -93,7 +95,7 @@ public:
      *   
      * Strava API Source: https://developers.strava.com/docs/reference/#api-Uploads-createUpload
      */
-    [[nodiscard]] QtPromise::QPromise<Model::Upload> createUpload(const QByteArray &file,
+    [[nodiscard]] QtPromise::QPromise<Model::Upload> createUpload(QFile *file,
                                                                   const QString &name,
                                                                   const QString &description,
                                                                   bool trainer,

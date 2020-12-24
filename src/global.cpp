@@ -93,7 +93,7 @@ QString toString(ActivityType activity)
     }
 }
 
-ActivityType toActivityType(const QString &str)
+std::optional<ActivityType> toActivityType(const QString &str)
 {
     static QHash<QString, ActivityType> activityTypes = {{
                                                              "AlpineSki",
@@ -243,7 +243,8 @@ ActivityType toActivityType(const QString &str)
                                                              "Yoga",
                                                              ActivityType::Yoga,
                                                          }};
-    return activityTypes.value(str, ActivityType::Other);
+    return activityTypes.contains(str) ? std::make_optional(activityTypes.value(str))
+                                       : std::nullopt;
 }
 
 QString toString(DataType dataType)
@@ -262,6 +263,17 @@ QString toString(DataType dataType)
     case DataType::TcxGz:
         return "tcx.gz";
     }
+}
+
+std::optional<DataType> toDataType(const QString &str)
+{
+    static QHash<QString, DataType> dataTypes = {{"fit", DataType::Fit},
+                                                 {"fit.gz", DataType::FitGz},
+                                                 {"gpx", DataType::Gpx},
+                                                 {"gpx.gz", DataType::GpxGz},
+                                                 {"tcx", DataType::Tcx},
+                                                 {"tcx.gz", DataType::TcxGz}};
+    return dataTypes.contains(str) ? std::make_optional(dataTypes.value(str)) : std::nullopt;
 }
 
 } // namespace QtStrava

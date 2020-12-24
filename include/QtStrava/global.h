@@ -3,6 +3,8 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qloggingcategory.h>
 
+#include <optional>
+
 #if defined(QTSTRAVA_LIBRARY) && defined(QTSTRAVA_LIBRARY_SHARED)
 #define QTSTRAVA_EXPORT Q_DECL_EXPORT
 #elif defined(QTSTRAVA_LIBRARY_SHARED)
@@ -75,7 +77,8 @@ enum class ResourceState {
 enum class DataType { Fit, FitGz, Tcx, TcxGz, Gpx, GpxGz };
 
 [[nodiscard]] extern QTSTRAVA_EXPORT QString toString(ActivityType activity);
-[[nodiscard]] extern QTSTRAVA_EXPORT ActivityType toActivityType(const QString &str);
+[[nodiscard]] extern QTSTRAVA_EXPORT std::optional<ActivityType> toActivityType(const QString &str);
 
 [[nodiscard]] extern QTSTRAVA_EXPORT QString toString(DataType dataType);
+[[nodiscard]] extern QTSTRAVA_EXPORT std::optional<DataType> toDataType(const QString &str);
 }
