@@ -65,7 +65,10 @@ inline void from_json(const nlohmann::json &j, SummaryActivity &activity)
     activity.setName(j["name"].get<QString>());
     activity.setDistance(j["distance"].get<qreal>());
     activity.setMovingTime(j["moving_time"].get<int>());
+    activity.setActivityType(j["type"].get<ActivityType>());
     activity.setStartDate(j["start_date"].get<QDateTime>());
+    activity.setStartDateLocal(j["start_date_local"].get<QDateTime>());
+    activity.setGearId(j["gear_id"].is_null() ? QString{} : j["gear_id"].get<QString>());
 }
 
 inline void from_json(const nlohmann::json &j, SummaryClub &club) {}
