@@ -2,9 +2,11 @@
 
 #include <nlohmann/json-schema.hpp>
 
+#include <QtStrava/Model/detailedactivity.h>
 #include <QtStrava/Model/detailedathlete.h>
 #include <QtStrava/Model/fault.h>
 #include <QtStrava/Model/summaryactivity.h>
+#include <QtStrava/Model/upload.h>
 #include <QtStrava/client.h>
 
 class SchemataTest : public QObject
@@ -20,7 +22,7 @@ private slots:
 
 void SchemataTest::initTestCase()
 {
-    // Call something in the library to initialize resources
+    // Call something in the library to initialize the resources
     QtStrava::Client client;
     Q_UNUSED(client.accessToken());
 }
@@ -31,9 +33,11 @@ void SchemataTest::validateModelSchema_data()
 
     QTest::addColumn<QString>("fileName");
 
+    QTest::addRow("DetailedActivity") << DetailedActivity::JsonSchema;
     QTest::addRow("DetailedAthlete") << DetailedAthlete::JsonSchema;
     QTest::addRow("Fault") << Fault::JsonSchema;
     QTest::addRow("SummaryActivity") << SummaryActivity::JsonSchema;
+    QTest::addRow("Upload") << Upload::JsonSchema;
 }
 
 void SchemataTest::validateModelSchema()
@@ -51,8 +55,6 @@ void SchemataTest::validateModelSchema()
                                                         nullptr,
                                                         [](const std::string &,
                                                            const std::string &) {}};
-        validator.validate(doc);
-
         validator.validate(doc);
     } catch (const std::exception &e) {
         QFAIL(e.what());

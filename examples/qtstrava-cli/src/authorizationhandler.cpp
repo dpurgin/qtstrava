@@ -41,7 +41,7 @@ AuthorizationHandler::AuthorizationHandler(QObject *parent)
     m_oauth2.setAuthorizationUrl(QUrl{"https://www.strava.com/oauth/authorize"});
     m_oauth2.setAccessTokenUrl(QUrl{"https://www.strava.com/api/v3/oauth/token"});
     m_oauth2.setClientIdentifier(m_clientId);
-    m_oauth2.setScope("profile:read_all,activity:read_all");
+    m_oauth2.setScope("profile:read_all,activity:read_all,activity:write");
     m_oauth2.setRefreshToken(m_refreshToken);
 
     m_oauth2.setModifyParametersFunction(

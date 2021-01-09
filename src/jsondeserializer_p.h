@@ -14,10 +14,12 @@
 
 #include <nonstd/expected.hpp>
 
+#include <QtStrava/Model/detailedactivity.h>
 #include <QtStrava/Model/detailedathlete.h>
 #include <QtStrava/Model/error.h>
 #include <QtStrava/Model/fault.h>
 #include <QtStrava/Model/summaryactivity.h>
+#include <QtStrava/Model/upload.h>
 #include <QtStrava/deserializererror.h>
 
 #include <nlohmann/json-qt.hpp>
@@ -29,9 +31,20 @@ inline void from_json(const nlohmann::json &j, ResourceState &resourceState)
 {
     resourceState = static_cast<ResourceState>(j.get<int>());
 }
+
+inline void from_json(const nlohmann::json &j, ActivityType &activityType)
+{
+    activityType = toActivityType(j.get<QString>()).value_or(ActivityType::Other);
+}
 } // namespace QtStrava
 
 namespace QtStrava::Model {
+
+inline void from_json(const nlohmann::json &j, MetaAthlete &athlete)
+{
+    athlete.setId(j["id"].get<quint64>());
+    athlete.setResourceState(j["resource_state"].get<ResourceState>());
+}
 
 inline void from_json(const nlohmann::json &j, Error &error)
 {
@@ -52,7 +65,10 @@ inline void from_json(const nlohmann::json &j, SummaryActivity &activity)
     activity.setName(j["name"].get<QString>());
     activity.setDistance(j["distance"].get<qreal>());
     activity.setMovingTime(j["moving_time"].get<int>());
+    activity.setActivityType(j["type"].get<ActivityType>());
     activity.setStartDate(j["start_date"].get<QDateTime>());
+    activity.setStartDateLocal(j["start_date_local"].get<QDateTime>());
+    activity.setGearId(j["gear_id"].is_null() ? QString{} : j["gear_id"].get<QString>());
 }
 
 inline void from_json(const nlohmann::json &j, SummaryClub &club) {}
@@ -89,6 +105,40 @@ inline void from_json(const nlohmann::json &j, DetailedAthlete &detailedAthlete)
     detailedAthlete.setClubs(j["clubs"].get<QVector<SummaryClub>>());
     detailedAthlete.setBikes(j["bikes"].get<QVector<SummaryGear>>());
     detailedAthlete.setShoes(j["shoes"].get<QVector<SummaryGear>>());
+}
+
+inline void from_json(const nlohmann::json &j, DetailedActivity &detailedActivity)
+{
+    detailedActivity.setAthlete(j["athlete"].get<MetaAthlete>());
+    detailedActivity.setCommute(j["commute"].get<bool>());
+    detailedActivity.setDistance(j["distance"].get<qreal>());
+    detailedActivity.setElapsedTime(std::chrono::seconds{j["elapsed_time"].get<int>()});
+    detailedActivity.setId(j["id"].get<quint64>());
+    detailedActivity.setMovingTime(std::chrono::seconds{j["moving_time"].get<int>()});
+    detailedActivity.setName(j["name"].get<QString>());
+    detailedActivity.setResourceState(j["resource_state"].get<ResourceState>());
+    detailedActivity.setTrainer(j["trainer"].get<bool>());
+    detailedActivity.setType(j["type"].get<ActivityType>());
+}
+
+inline void from_json(const nlohmann::json &j, Upload &upload)
+{
+    upload.setId(j["id"].get<quint64>());
+    upload.setIdStr(j["id_str"].get<QString>());
+
+    if (!j["external_id"].is_null()) {
+        upload.setExternalId(j["external_id"].get<QString>());
+    }
+
+    if (!j["error"].is_null()) {
+        upload.setError(j["error"].get<QString>());
+    }
+
+    upload.setStatus(j["status"].get<QString>());
+
+    if (!j["activity_id"].is_null()) {
+        upload.setActivityId(j["activity_id"].get<quint64>());
+    }
 }
 } // namespace QtStrava::Model
 

@@ -78,12 +78,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt5 COMPONENTS Core Network NetworkAuth Gui REQUIRED)
 
 set(QTSTRAVA_HEADERS
+    include/QtStrava/Model/detailedactivity.h
     include/QtStrava/Model/detailedathlete.h
     include/QtStrava/Model/error.h
     include/QtStrava/Model/fault.h
+    include/QtStrava/Model/metaathlete.h
     include/QtStrava/Model/summaryactivity.h
     include/QtStrava/Model/summaryclub.h
     include/QtStrava/Model/summarygear.h
+    include/QtStrava/Model/updatableactivity.h
+    include/QtStrava/Model/upload.h
     include/QtStrava/client.h
     include/QtStrava/deserializererror.h
     include/QtStrava/networkerror.h
@@ -93,17 +97,21 @@ set(QTSTRAVA_HEADERS
 )
 
 set(QTSTRAVA_SOURCES
+    src/Model/detailedactivity.cpp
     src/Model/detailedathlete.cpp
     src/Model/error.cpp
     src/Model/fault.cpp
+    src/Model/metaathlete.cpp
     src/Model/summaryactivity.cpp
     src/Model/summaryclub.cpp
     src/Model/summarygear.cpp
+    src/Model/updatableactivity.cpp
+    src/Model/upload.cpp
     src/client.cpp
     src/deserializererror.cpp
-    src/networkerror.cpp
     src/global.cpp
     src/jsondeserializer.cpp
+    src/networkerror.cpp
 )
 
 set(QTSTRAVA_RESOURCES qtstrava.qrc)

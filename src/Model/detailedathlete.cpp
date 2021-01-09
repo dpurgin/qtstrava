@@ -11,9 +11,8 @@ namespace QtStrava::Model {
 QDebug operator<<(QDebug dbg, const DetailedAthlete &athlete)
 {
     QDebugStateSaver saver{dbg};
-    dbg.nospace() << "StravaDetailedAthlete[id=" << athlete.id()
-                  << ", firstName=" << athlete.firstName() << ", lastName=" << athlete.lastName()
-                  << "]";
+    dbg.nospace() << "DetailedAthlete[id=" << athlete.id() << ", firstName=" << athlete.firstName()
+                  << ", lastName=" << athlete.lastName() << "]";
     return dbg;
 }
 

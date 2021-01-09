@@ -7,15 +7,22 @@
 
 #include "jsondeserializer_p.h"
 
+#include <QtStrava/Model/detailedactivity.h>
 #include <QtStrava/Model/detailedathlete.h>
 #include <QtStrava/Model/fault.h>
 #include <QtStrava/Model/summaryactivity.h>
+#include <QtStrava/Model/updatableactivity.h>
+#include <QtStrava/Model/upload.h>
 #include <QtStrava/deserializererror.h>
 #include <QtStrava/networkerror.h>
 
+#include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
+#include <QtCore/qurlquery.h>
+#include <QtNetwork/qhttpmultipart.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
@@ -68,7 +75,9 @@ inline void handleNetworkSuccess(QNetworkReply *reply, const Resolve &resolve, c
 }
 
 template<typename ExpectedModel, typename Resolve, typename Reject>
-inline auto networkReplyHandler(QNetworkReply *reply, const Resolve &resolve, const Reject &reject)
+[[nodiscard]] inline auto networkReplyHandler(QNetworkReply *reply,
+                                              const Resolve &resolve,
+                                              const Reject &reject)
 {
     return [reply, resolve, reject]() {
         if (reply->error() != QNetworkReply::NoError) {
@@ -79,6 +88,19 @@ inline auto networkReplyHandler(QNetworkReply *reply, const Resolve &resolve, co
 
         reply->deleteLater();
     };
+}
+
+[[nodiscard]] inline QUrlQuery toUrlQuery(const QVariantMap &parameters)
+{
+    QUrlQuery query;
+    for (auto cit = std::cbegin(parameters); cit != std::cend(parameters); ++cit) {
+        if (cit.value().isNull()) {
+            continue;
+        }
+
+        query.addQueryItem(cit.key(), cit.value().toString());
+    }
+    return query;
 }
 
 class ClientPrivate
@@ -96,6 +118,24 @@ class ClientPrivate
              const Resolve &resolve,
              const Reject &reject);
 
+    template<typename ExpectedModel, typename Resolve, typename Reject>
+    void postFormData(const QString &endPoint,
+                      const QVariantMap &parameters,
+                      const Resolve &resolve,
+                      const Reject &reject);
+
+    template<typename ExpectedModel, typename Resolve, typename Reject>
+    void postMultiPart(const QString &endPoint,
+                       QHttpMultiPart *multiPart,
+                       const Resolve &resolve,
+                       const Reject &reject);
+
+    template<typename ExpectedModel, typename Resolve, typename Reject>
+    void put(const QString &endPoint,
+             const QVariantMap &parameters,
+             const Resolve &resolve,
+             const Reject &reject);
+
     QNetworkAccessManager m_nam;
     QUrl m_server;
     QString m_accessToken;
@@ -106,18 +146,7 @@ QNetworkRequest ClientPrivate::createRequest(const QString &endPoint, const QVar
 {
     QUrl url{m_server};
     url.setPath(m_server.path() + endPoint);
-
-    QStringList queryItems;
-
-    for (auto cit = std::cbegin(parameters); cit != std::cend(parameters); ++cit) {
-        if (cit.value().isNull()) {
-            continue;
-        }
-
-        queryItems << QString{"%1=%2"}.arg(cit.key()).arg(cit.value().toString());
-    }
-
-    url.setQuery(queryItems.join('&'));
+    url.setQuery(toUrlQuery(parameters));
 
     QNetworkRequest request{url};
     request.setRawHeader("Authorization", m_authorizationHeaderValue);
@@ -133,9 +162,67 @@ void ClientPrivate::get(const QString &endPoint,
 {
     QNetworkRequest request = createRequest(endPoint, parameters);
 
-    qCDebug(Private::network) << "Requesting:" << request.url();
+    qCDebug(Private::network) << "GET" << request.url();
 
     QNetworkReply *reply = m_nam.get(request);
+
+    QObject::connect(reply,
+                     &QNetworkReply::finished,
+                     networkReplyHandler<ExpectedModel>(reply, resolve, reject));
+}
+
+template<typename ExpectedModel, typename Resolve, typename Reject>
+void ClientPrivate::postFormData(const QString &endPoint,
+                                 const QVariantMap &parameters,
+                                 const Resolve &resolve,
+                                 const Reject &reject)
+{
+    QNetworkRequest request = createRequest(endPoint, {});
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QByteArray formData = toUrlQuery(parameters).toString(QUrl::FullyEncoded).toUtf8();
+
+    qCDebug(Private::network) << "POST" << request.url() << ", form data:" << formData;
+
+    QNetworkReply *reply = m_nam.post(request, formData);
+
+    QObject::connect(reply,
+                     &QNetworkReply::finished,
+                     networkReplyHandler<ExpectedModel>(reply, resolve, reject));
+}
+
+template<typename ExpectedModel, typename Resolve, typename Reject>
+void ClientPrivate::postMultiPart(const QString &endPoint,
+                                  QHttpMultiPart *multiPart,
+                                  const Resolve &resolve,
+                                  const Reject &reject)
+{
+    QNetworkRequest request = createRequest(endPoint, {});
+
+    qCDebug(Private::network) << "POST" << request.url() << ", form data:" << multiPart;
+
+    QNetworkReply *reply = m_nam.post(request, multiPart);
+    multiPart->setParent(reply);
+
+    QObject::connect(reply,
+                     &QNetworkReply::finished,
+                     networkReplyHandler<ExpectedModel>(reply, resolve, reject));
+}
+
+template<typename ExpectedModel, typename Resolve, typename Reject>
+void ClientPrivate::put(const QString &endPoint,
+                        const QVariantMap &parameters,
+                        const Resolve &resolve,
+                        const Reject &reject)
+{
+    QNetworkRequest request = createRequest(endPoint, {});
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QByteArray body = QJsonDocument::fromVariant(parameters).toJson(QJsonDocument::Compact);
+
+    qCDebug(Private::network) << "PUT" << request.url() << ", body:" << body;
+
+    QNetworkReply *reply = m_nam.put(request, body);
 
     QObject::connect(reply,
                      &QNetworkReply::finished,
@@ -193,4 +280,106 @@ QtPromise::QPromise<QVector<Model::SummaryActivity>> Client::getLoggedInAthleteA
         d->get<QVector<Model::SummaryActivity>>("/athlete/activities", parameters, resolve, reject);
     }};
 }
+
+QtPromise::QPromise<Model::DetailedActivity> Client::createActivity(
+    const QString &name,
+    ActivityType type,
+    const QDateTime &startDateLocal,
+    std::chrono::seconds elapsedTime,
+    std::optional<QString> description,
+    std::optional<qreal> distance,
+    std::optional<bool> trainer,
+    std::optional<bool> commute)
+{
+    Q_D(Client);
+
+    return QtPromise::QPromise<Model::DetailedActivity>{[=](const auto &resolve,
+                                                            const auto &reject) {
+        QVariantMap parameters{{"name", name},
+                               {"type", toString(type)},
+                               {"start_date_local", startDateLocal.toString(Qt::ISODate)},
+                               {"elapsed_time", QVariant::fromValue(elapsedTime.count())},
+                               {"description",
+                                description.has_value() ? QVariant{*description} : QVariant{}},
+                               {"distance", distance.has_value() ? QVariant{*distance} : QVariant{}},
+                               {"trainer", trainer.has_value() && *trainer ? 1 : QVariant{}},
+                               {"commute", commute.has_value() && *commute ? 1 : QVariant{}}};
+        d->postFormData<Model::DetailedActivity>("/activities", parameters, resolve, reject);
+    }};
+}
+
+QtPromise::QPromise<Model::DetailedActivity> Client::updateActivityById(
+    quint64 id, const Model::UpdatableActivity &updatableActivity)
+{
+    Q_D(Client);
+
+    return QtPromise::QPromise<Model::DetailedActivity>{
+        [=](const auto &resolve, const auto &reject) {
+            QVariantMap parameters{{"commute", updatableActivity.commute()},
+                                   {"trainer", updatableActivity.trainer()},
+                                   {"description", updatableActivity.description()},
+                                   {"name", updatableActivity.name()},
+                                   {"type", toString(updatableActivity.type())},
+                                   {"gearId", updatableActivity.gearId()}};
+
+            d->put<Model::DetailedActivity>(QString{"/activities/%1"}.arg(id),
+                                            parameters,
+                                            resolve,
+                                            reject);
+        }};
+}
+
+QtPromise::QPromise<Model::Upload> Client::createUpload(QFile *file,
+                                                        const QString &name,
+                                                        const QString &description,
+                                                        bool trainer,
+                                                        bool commute,
+                                                        DataType dataType,
+                                                        const QString &externalId)
+{
+    Q_D(Client);
+    Q_ASSERT(file->isOpen());
+
+    return QtPromise::QPromise<Model::Upload>{[=](const auto &resolve, const auto &reject) {
+        QHttpMultiPart *multiPart = new QHttpMultiPart{QHttpMultiPart::FormDataType};
+
+        auto makeHttpPart = [](const QString &key, const QByteArray &value) {
+            QHttpPart part;
+            part.setHeader(QNetworkRequest::ContentDispositionHeader,
+                           QString{"form-data; name=\"%1\""}.arg(key));
+            part.setBody(value);
+            return part;
+        };
+
+        multiPart->append(makeHttpPart("name", name.toUtf8()));
+        multiPart->append(makeHttpPart("description", description.toUtf8()));
+        multiPart->append(makeHttpPart("trainer", trainer ? "1" : "0"));
+        multiPart->append(makeHttpPart("commute", commute ? "1" : "0"));
+        multiPart->append(makeHttpPart("data_type", toString(dataType).toUtf8()));
+        multiPart->append(makeHttpPart("external_id", externalId.toUtf8()));
+
+        QFileInfo fileInfo{file->fileName()};
+
+        QHttpPart filePart;
+        filePart.setHeader(QNetworkRequest::ContentDispositionHeader,
+                           QString{"form-data; name=\"file\"; filename=\"%1\""}.arg(
+                               fileInfo.fileName()));
+        filePart.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
+        filePart.setBodyDevice(file);
+        multiPart->append(filePart);
+
+        d->postMultiPart<Model::Upload>("/uploads", multiPart, resolve, reject);
+    }};
+}
+
+QtPromise::QPromise<Model::Upload> Client::getUploadById(quint64 uploadId)
+{
+    Q_D(Client);
+
+    return QtPromise::QPromise<Model::Upload>{
+        [d, uploadId](const auto &resolve, const auto &reject) {
+            d->get<Model::Upload>(QString{"/uploads/%1"}.arg(uploadId), {}, resolve, reject);
+        }};
+}
+
 } // namespace QtStrava

@@ -15,7 +15,7 @@ QDebug operator<<(QDebug dbg, const Fault &fault)
 {
     QDebugStateSaver saver{dbg};
 
-    dbg.nospace() << "StravaFault[message=" << fault.message() << ", errors=[";
+    dbg.nospace() << "Fault[message=" << fault.message() << ", errors=[";
 
     if (fault.errors().isEmpty()) {
         dbg << "no items";

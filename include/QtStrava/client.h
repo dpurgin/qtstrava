@@ -11,14 +11,20 @@
 #include <QtCore/qurl.h>
 #include <QtPromise>
 
+#include <chrono>
 #include <optional>
+
+class QFile;
 
 namespace QtStrava {
 
 namespace Model {
+class DetailedActivity;
 class DetailedAthlete;
 class ClientPrivate;
 class SummaryActivity;
+class UpdatableActivity;
+class Upload;
 } // namespace Model
 
 class ClientPrivate;
@@ -51,6 +57,61 @@ public:
         std::optional<QDateTime> after,
         int page = 1,
         int perPage = 30);
+
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *   
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Activities-createActivity
+     */
+    [[nodiscard]] QtPromise::QPromise<Model::DetailedActivity> createActivity(
+        const QString &name,
+        ActivityType type,
+        const QDateTime &startDateLocal,
+        std::chrono::seconds elapsedTime,
+        std::optional<QString> description,
+        std::optional<qreal> distance,
+        std::optional<bool> trainer,
+        std::optional<bool> commute);
+
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *   
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Activities-updateActivityById
+     */
+    [[nodiscard]] QtPromise::QPromise<Model::DetailedActivity> updateActivityById(
+        quint64 id, const Model::UpdatableActivity &updatableActivity);
+
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *   
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Uploads-createUpload
+     */
+    [[nodiscard]] QtPromise::QPromise<Model::Upload> createUpload(QFile *file,
+                                                                  const QString &name,
+                                                                  const QString &description,
+                                                                  bool trainer,
+                                                                  bool commute,
+                                                                  DataType dataType,
+                                                                  const QString &externalId);
+
+    /*!
+     * Possible rejection reasons:
+     *   - QtStrava::NetworkError
+     *   - QtStrava::DeserializerError
+     *   - QtStrava::Model::Fault     
+     *   
+     * Strava API Source: https://developers.strava.com/docs/reference/#api-Uploads-getUploadById
+     */
+    [[nodiscard]] QtPromise::QPromise<Model::Upload> getUploadById(quint64 uploadId);
 
 Q_SIGNALS:
     void accessTokenChanged();

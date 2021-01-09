@@ -92,7 +92,7 @@ void SummaryActivity::setGearId(const QString &gearId)
 QDebug operator<<(QDebug dbg, const SummaryActivity &summaryActivity)
 {
     QDebugStateSaver saver{dbg};
-    dbg.nospace() << "StravaSummaryActivity[id=" << summaryActivity.id()
+    dbg.nospace() << "SummaryActivity[id=" << summaryActivity.id()
                   << ", name=" << summaryActivity.name() << "]";
     return dbg;
 }

@@ -3,18 +3,16 @@
 //
 // Licensed under the MIT license. See LICENSE for details.
 
-#include <QtStrava/Model/error.h>
+#include <QtStrava/Model/upload.h>
 
 #include <QtCore/qdebug.h>
 
 namespace QtStrava::Model {
-QDebug operator<<(QDebug dbg, const Error &stravaError)
+QDebug operator<<(QDebug dbg, const Upload &upload)
 {
     QDebugStateSaver saver{dbg};
-
-    dbg.nospace() << "Error[code=" << stravaError.code() << ", field=" << stravaError.field()
-                  << ", resource=" << stravaError.resource() << "]";
-
+    dbg.nospace() << "Upload[id=" << upload.id() << ", status=" << upload.status()
+                  << ", error=" << upload.error() << "]";
     return dbg;
 }
 } // namespace QtStrava::Model
